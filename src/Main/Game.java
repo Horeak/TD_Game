@@ -1,10 +1,14 @@
 package Main;
 
+import Entities.Entity;
+import Entities.TestEntity;
 import Guis.Gui;
 import Guis.Interfaces.MainMenu;
 import Guis.Menu;
 import Map.World;
 import Render.AbstractWindowRender;
+import Render.Renders.WorldRender;
+import Settings.Config;
 import Settings.Values.KeybindingAction;
 import Utils.Player;
 import Utils.Registrations;
@@ -19,8 +23,10 @@ import java.util.logging.Logger;
 
 public class Game extends BasicGame implements InputListener{
 
-//TODO Add entity "effects" (like minecraft potion effects) to allow thing like freeze and poison. (have it where it updates every second or so where it has acces to the entity instance and can change speed, damage...)
+//TODO Add entity "effects" (like minecraft potion effects) to allow thing like freeze and poison. (have it where it updates every second or so where it has acces to the entity instance and can change gameSpeed, damage...)
 	//TODO Basic tower defence game. (Randomly generated maps? Maybe use the random value A* star path finding to generate the path)
+
+	//TODO Loading new guis are taking too long! (Specificly the StartGameMenu and GuiIngame)
 
 	public static int gameWindowX = 500;
 	public static int gameWindowY = 500;
@@ -42,7 +48,9 @@ public class Game extends BasicGame implements InputListener{
 	public static int default_y_size  = 50;
 
 	public static World world;
-	public static Player player;
+	public static Player player = new Player();
+
+	public static int gameSpeed = 1;
 
 	public Game( String title ) {
 		super(title);
@@ -93,8 +101,8 @@ public class Game extends BasicGame implements InputListener{
 						render.mouseClick(button, x, y);
 				}
 
-				if (menu  != null) {
-					menu .mouseClick(button, x, y);
+				if (menu != null) {
+					menu.mouseClick(button, x, y);
 				}
 			}
 
@@ -126,19 +134,41 @@ public class Game extends BasicGame implements InputListener{
 
 	public static ArrayList<KeybindingAction> keybindingActions = new ArrayList<>();
 	public static void addKEybindings(){
-		//keybindingActions.add(new KeybindingAction(Config.getKeybindFromID("inventory")) {
-		//	@Override
-		//	public void performAction() {
-		//		getClient().setCurrentMenu(new GuiInventory());
-		//	}
-		//});
+		keybindingActions.add(new KeybindingAction(Config.getKeybindFromID("pause")) {
+			@Override
+			public void performAction() {
+				Game.gameSpeed = 0;
+			}
+		});
+		keybindingActions.add(new KeybindingAction(Config.getKeybindFromID("speed.1")) {
+			@Override
+			public void performAction() {
+				Game.gameSpeed = 1;
+			}
+		});
+		keybindingActions.add(new KeybindingAction(Config.getKeybindFromID("speed.2")) {
+			@Override
+			public void performAction() {
+				Game.gameSpeed = 2;
+			}
+		});
+		keybindingActions.add(new KeybindingAction(Config.getKeybindFromID("speed.3")) {
+			@Override
+			public void performAction() {
+				Game.gameSpeed = 3;
+			}
+		});
+
+		keybindingActions.add(new KeybindingAction(Config.getKeybindFromID("spawnEnt")) {
+			@Override
+			public void performAction() {
+				Game.world.entities.add(new TestEntity(Game.world, Game.world.getStartNode().x, Game.world.getStartNode().y));
+			}
+		});
 	}
 
 	@Override
 	public void update(GameContainer container, int delta) throws SlickException {
-		if(Display.wasResized() && resizable){
-			gameContainer.setDisplayMode(Display.getWidth(), Display.getHeight(), false);
-		}
 	}
 
 	@Override
@@ -155,6 +185,13 @@ public class Game extends BasicGame implements InputListener{
 			}
 		}
 
+		if(Game.world != null && ingame){
+			for(Entity ent : Game.world.entities){
+				if(ent != null)
+					ent.renderEntity(g2, WorldRender.renderX, WorldRender.renderY);
+			}
+		}
+
 		if (menu != null) {
 			if (menu.canRender()) {
 				menu.render(g2);
@@ -165,12 +202,14 @@ public class Game extends BasicGame implements InputListener{
 				}
 			}
 		}
+
+
 	}
 
 
 	@Override
 	public void keyPressed( int key, char c ) {
-		if(menu  == null && ingame){
+		if(ingame){
 			for(KeybindingAction ac : keybindingActions){
 				if(key == ac.key.getKey()){
 					ac.performAction();

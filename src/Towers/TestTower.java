@@ -1,17 +1,17 @@
 package Towers;
 
-import Main.Game;
 import Map.World;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.geom.Circle;
 import org.newdawn.slick.geom.Rectangle;
 
-public class TestTurret extends Turret {
-	public TestTurret(){
+public class TestTower extends Tower {
+	public TestTower(){
 		super(null, 0, 0);
 	}
 
-	public TestTurret(World world, int x, int y ) {
+	public TestTower( World world, int x, int y ) {
 		super(world, x, y);
 	}
 
@@ -27,7 +27,7 @@ public class TestTurret extends Turret {
 
 	@Override
 	public String getTurretName() {
-		return "Test Turret";
+		return "Test Tower";
 	}
 
 	public int level = 1;
@@ -55,18 +55,8 @@ public class TestTurret extends Turret {
 	@Override
 	public void upgradeTurret() {
 		level += 1;
-		Game.player.money += getUpgradeCost();
 	}
 
-	@Override
-	public int getEnemiesKilledByTurret() {
-		return Integer.MAX_VALUE;
-	}
-
-	@Override
-	public int getEnemiesInSight() {
-		return 0;
-	}
 
 	@Override
 	public int getTurretRange() {
@@ -78,25 +68,27 @@ public class TestTurret extends Turret {
 		return 5 + (level * 5);
 	}
 
+	@Override
+	public int getAttackDelay() {
+		return 10;
+	}
+
 
 	@Override
 	public void renderTower( Graphics g2, int renderX, int renderY, int sizeX, int sizeY ) {
 		Rectangle rectangle = new Rectangle(renderX, renderY, sizeX, sizeY);
-		Rectangle rectangle1 = new Rectangle(renderX + (sizeX * 0.25F), renderY + 4, (sizeX * 0.5F), (sizeY * 0.75F));
 
 		g2.setColor(Color.yellow);
 		g2.fill(rectangle);
 		g2.setColor(Color.black);
 		g2.draw(rectangle);
 
+		Circle circle = new Circle(rectangle.getCenterX(), rectangle.getCenterY(), ((sizeX + sizeY) / 6));
+
 		g2.setColor(Color.orange);
-		g2.fill(rectangle1);
+		g2.fill(circle);
 		g2.setColor(Color.black);
-		g2.draw(rectangle1);
-
-		g2.drawLine(rectangle1.getX(), rectangle1.getY() + 3, rectangle1.getX() + rectangle1.getWidth() - 1, rectangle1.getY() + 3);
-		g2.drawLine(rectangle1.getX() + ((rectangle1.getWidth() - 1) / 2), rectangle1.getY(), rectangle1.getX() + ((rectangle1.getWidth() - 1) / 2), rectangle1.getY() + rectangle1.getHeight() - 1);
-
+		g2.draw(circle);
 	}
 
 }

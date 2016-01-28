@@ -2,15 +2,15 @@ package Utils;
 
 public enum Difficulty {
 
-	EASY("Easy", 0.5F, 0.5F, 0.5F, 30, 2),
-	NORMAL("Normal", 1F, 1F, 1F, 20, 1),
-	HARD("Hard", 2F, 2F, 2F, 10, 0.5F);
+	EASY("Easy", 0.5F, 0.5F, 0.5F, 30),
+	NORMAL("Normal", 1F, 1F, 1F, 20),
+	HARD("Hard", 2F, 2F, 2F, 10);
 
 
 	public String name;
 	public int lives;
-	public float costModifer, healthModifier, enemyCountModier, sizeMultiplier;
-	Difficulty(String name, float costModifier, float healthModifier, float enemyCountModifer, int lives, float sizeMultiplier){
+	public float costModifer, healthModifier, enemyCountModier;
+	Difficulty(String name, float costModifier, float healthModifier, float enemyCountModifer, int lives){
 		this.name = name;
 
 		this.lives = lives;
@@ -18,6 +18,5 @@ public enum Difficulty {
 		this.costModifer = costModifier;
 		this.healthModifier = healthModifier;
 		this.enemyCountModier = enemyCountModifer;
-		this.sizeMultiplier = sizeMultiplier;
 	}
 }
