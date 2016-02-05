@@ -1,7 +1,8 @@
 package Map;
 
-import Entities.Entity;
+import EntityFiles.Entity;
 import Main.Game;
+import NoiseGenerator.PerlinNoiseGenerator;
 import PathFinding.Interfaces.MovingObject;
 import PathFinding.Interfaces.NodeMap;
 import PathFinding.NodeMapPathFinder;
@@ -10,20 +11,20 @@ import PathFinding.Utils.Path;
 import Towers.BaseNode;
 import Towers.Tower;
 import Utils.Difficulty;
-import Utils.PerlinNoiseGenerator;
 import Utils.UpdateThread;
-import com.sun.javafx.geom.Vec2d;
+import World.WorldBase;
 import org.newdawn.slick.geom.Circle;
 
+import javax.swing.*;
 import java.util.ArrayList;
 
-public class World  implements NodeMap{
+public class World  extends WorldBase implements NodeMap{
 	public UpdateThread updateThread = new UpdateThread();
 
 	public Node[][] nodes;
-	public int xSize, ySize;
+	public Tower[][] towers;
 
-	public ArrayList<Entity> entities = new ArrayList<>();
+	public int xSize, ySize;
 
 	public Node startNode, endNode;
 
@@ -31,6 +32,7 @@ public class World  implements NodeMap{
 
 	public World( int xSize, int ySize, Difficulty difficulty){
 		nodes = new Node[xSize][ySize];
+		towers = new Tower[xSize][ySize];
 
 		this.xSize = xSize;
 		this.ySize = ySize;
@@ -59,37 +61,36 @@ public class World  implements NodeMap{
 		return ents;
 	}
 
-	public void setTower( Node node, int x, int y){
+	public void setTower( Tower Tower, int x, int y){
 		if (x >= 0 && y >= 0 && x < xSize && y < ySize){
-			Node nd = null;
+			if(Tower != null) {
+				Tower.x = x;
+				Tower.y = y;
 
-			if(nodes[x][y] instanceof BaseNode){
-				nd = nodes[x][y];
+				Tower.world = this;
 			}
 
-			nodes[ x ][ y ] = node != null ? node : createNode(x,y);
-
-			if(nodes[x][y] instanceof BaseNode){
-				((BaseNode)nodes[x][y]).x = x;
-				((BaseNode)nodes[x][y]).y = y;
-
-				((BaseNode)nodes[x][y]).world = this;
-			}
-
-			if(nd != null && nd instanceof BaseNode){
-				((BaseNode)nodes[x][y]).value = ((BaseNode)nd).value;
-				((BaseNode)nodes[x][y]).isPath = ((BaseNode)nd).isPath;
-			}
-
-			if(nd != null){
-				if(nd.getValue("openPathNode") != null && (boolean)nd.getValue("openPathNode")){
-					addedToOpenList((BaseNode)nodes[x][y]);
-				}
-			}
-
+			towers[ x ][ y ] = Tower;
 		}
 	}
 
+	public void setNode(Node node, int x, int y){
+		if (x >= 0 && y >= 0 && x < xSize && y < ySize){
+			if(node != null) {
+				node.x = x;
+				node.y = y;
+			}
+
+			nodes[ x ][ y ] = node;
+		}
+	}
+
+	public Tower getTower( int x, int y ) {
+		if (x >= 0 && y >= 0 && x < xSize && y < ySize){
+			return towers[x][y];
+		}
+		return null;
+	}
 
 	@Override
 	public Node getNode( int x, int y ) {
@@ -102,7 +103,7 @@ public class World  implements NodeMap{
 	@Override
 	public void setNode( Node node ) {
 		if(node != null)
-		setTower(node, node.x, node.y);
+			setNode(node, node.x, node.y);
 	}
 
 
@@ -132,105 +133,83 @@ public class World  implements NodeMap{
 			}
 		}
 
-		int genAttempts = 0, attemptsToReset = 5;
+		SwingUtilities.invokeLater(() -> {
+			int genAttempts = 0, attemptsToReset = 10;
 
-		generatePath:
-		for(int i = 0; i < attemptsToReset; i++){
+			generatePath:
+			for(int i = 0; i < attemptsToReset; i++){
 
-		for (int x = 0; x < xSize; x++) {
-			for (int y = 0; y < ySize; y++) {
-				if(getNode(x,y) instanceof BaseNode){
-					((BaseNode)getNode(x,y)).isPath = false;
-				}
-			}
-		}
-
-			int sX = 0, sY = 0, g = 0;
-			//0 means to start at y
-			//1 means to start with x
-			while (g == 0){
-			if (Game.rand.nextInt(2) == 0) {
-				sX = 0;
-				sY = Game.rand.nextInt(ySize);
-
-				if(validNode(null, sX, sY)) {
-					g = 1;
-					break;
-				}
-			} else {
-				sX = Game.rand.nextInt(xSize);
-				sY = 0;
-
-				if(validNode(null, sX, sY)) {
-					g = 2;
-					break;
-				}
-			}
-			}
-
-			setStartNode(createNode(sX, sY));
-
-			boolean valid = false;
-			int minDistance = ((xSize + ySize) / 2);
-
-			while (!valid) {
-				int eX = -1, eY = -1;
-
-				if (g == 1) {
-					eX = xSize - 1;
-					eY = Game.rand.nextInt(ySize);
-
-					if (eY == sY)
-						continue;
-
-					if(!validNode(null, eX, eY)) continue;
-
-				} else if (g == 2) {
-					eX = Game.rand.nextInt(xSize);
-					eY = ySize - 1;
-
-					if (eX == sX)
-						continue;
-
-					if(!validNode(null, eX, eY)) continue;
-				}
-
-				if (new Vec2d(eX, eY).distance(sX, sY) >= minDistance) {
-					valid = true;
-					setEndNode(createNode(eX, eY));
-					break;
-				} else {
-					continue;
-				}
-			}
-
-			try {
-				NodeMapPathFinder finder = new NodeMapPathFinder(this, ((xSize + ySize) / 2) * 100, false);
-				Path path = finder.findPath(null);
-
-
-				if (path == null || path.steps == null || path.getLength() <= 1) {
-					if(genAttempts >= attemptsToReset){
-						initMap();
-					}else{
-						genAttempts += 1;
-						continue;
+				for (int x = 0; x < xSize; x++) {
+					for (int y = 0; y < ySize; y++) {
+						if(getNode(x,y) instanceof BaseNode){
+							((BaseNode)getNode(x,y)).isPath = false;
+						}
 					}
 				}
 
-				if(path != null && path.steps != null && path.steps.size() > 0) {
-					for (Path.Step step : path.steps) {
-						((BaseNode) getNode(step.getX(), step.getY())).isPath = true;
+				int gen = Game.rand.nextInt(2);
+
+				ArrayList<Integer> topStart = new ArrayList<>();
+				ArrayList<Integer> leftStart = new ArrayList<>();
+
+				ArrayList<Integer> bottomEnd = new ArrayList<>();
+				ArrayList<Integer> rightEnd = new ArrayList<>();
+
+				for(int x = 0; x < xSize - 1; x++){
+					if(validNode(null, x, 0)){
+						topStart.add(x);
 					}
-					enemyPath = path;
+					if(validNode(null, 0, x)){
+						leftStart.add(x);
+					}
+					if(validNode(null, x, xSize - 1)){
+						bottomEnd.add(x);
+					}
+					if(validNode(null, xSize - 1, x)){
+						rightEnd.add(x);
+					}
 				}
 
-				break;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+				if(gen == 0){
+					setStartNode(createNode(topStart.get(Game.rand.nextInt(topStart.size())), 0));
+					setEndNode(createNode(bottomEnd.get(Game.rand.nextInt(bottomEnd.size())), ySize - 1));
+				}else{
+					setStartNode(createNode(0, leftStart.get(Game.rand.nextInt(leftStart.size()))));
+					setEndNode(createNode(xSize - 1, rightEnd.get(Game.rand.nextInt(rightEnd.size()))));
+				}
 
-		}
+				try {
+					NodeMapPathFinder finder = new NodeMapPathFinder(this, (xSize * ySize), false);
+					Path path = finder.findPath(null);
+
+
+					if (path == null || path.steps == null || path.getLength() <= 1) {
+						if(genAttempts >= attemptsToReset){
+							initMap();
+						}else{
+							genAttempts += 1;
+							continue;
+						}
+					}
+
+					if(path != null && path.steps != null && path.steps.size() > 0) {
+						for (Path.Step step : path.steps) {
+							((BaseNode) getNode(step.getX(), step.getY())).isPath = true;
+						}
+						enemyPath = path;
+					}
+
+					if(enemyPath == null){
+						throw new Exception("ERROR: path failed to generate!");
+					}
+
+					break;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
+		});
 
 	}
 
@@ -286,7 +265,7 @@ public class World  implements NodeMap{
 
 	@Override
 	public boolean validNode( MovingObject movingObject, int x, int y ) {
-		return getNode(x, y) instanceof BaseNode && !((BaseNode)getNode(x,y)).isPath && ((BaseNode)getNode(x,y)).value <= 1 && ((BaseNode)getNode(x,y)).value >= -2;
+		return getNode(x, y) instanceof BaseNode && !((BaseNode)getNode(x,y)).isPath && ((BaseNode)getNode(x,y)).value <= 1 && ((BaseNode)getNode(x,y)).value >= -2 && getTower(x, y) == null;
 	}
 
 	@Override
@@ -302,8 +281,8 @@ public class World  implements NodeMap{
 
 		for(int x = 0; x < xSize; x++){
 			for(int y = 0; y < ySize; y++){
-				if(getNode(x, y) instanceof Tower){
-					Tower tower = (Tower)getNode(x,y);
+				if(getTower(x, y) != null){
+					Tower tower = getTower(x,y);
 
 					//TODO Fix towerAttackDelay
 					if(tower.delay >= (tower.getAttackDelay() * (100))){
@@ -364,7 +343,9 @@ public class World  implements NodeMap{
 
 	public void loseCheck(){
 		if(Game.player.lives <= 0){
-			//Game Over!
+			//GameFiles Over!
+			System.out.println("Game over!");
+			Game.player.lives = 0;
 		}
 	}
 }

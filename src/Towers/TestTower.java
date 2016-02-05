@@ -30,17 +30,11 @@ public class TestTower extends Tower {
 		return "Test Tower";
 	}
 
-	public int level = 1;
-
 	@Override
 	public int getTurretMaxLevel() {
 		return 100;
 	}
 
-	@Override
-	public int getTurretLevel() {
-		return level;
-	}
 
 	@Override
 	public int getUpgradeCost() {
@@ -50,11 +44,6 @@ public class TestTower extends Tower {
 	@Override
 	public boolean canUpgrade() {
 		return getTurretLevel() < (getTurretMaxLevel());
-	}
-
-	@Override
-	public void upgradeTurret() {
-		level += 1;
 	}
 
 

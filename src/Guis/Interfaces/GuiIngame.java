@@ -1,19 +1,19 @@
 package Guis.Interfaces;
 
-import Entities.Entity;
-import Guis.Gui;
-import Guis.GuiObject;
-import Guis.Menu;
+import Entities.GameEntity;
+import EntityFiles.Entity;
+import Interface.Gui;
+import Interface.GuiObject;
+import Interface.UIMenu;
 import Main.Game;
 import Render.Renders.WorldRender;
 import Towers.Tower;
+import Utils.FontHandler;
 import Utils.Registrations;
-import Utils.RenderUtil;
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
-import org.newdawn.slick.util.FontUtils;
 
 import java.awt.*;
 
@@ -22,7 +22,7 @@ public class GuiIngame extends Gui {
 	public static Tower selectedTower;
 
 	public GuiIngame(  ) {
-		super(false);
+		super(Game.game.gameContainer, false);
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class GuiIngame extends Gui {
 		}
 
 		Rectangle tangle = new Rectangle(Display.getWidth() - 100, 0, 100, Display.getHeight());
-		g2.setColor(RenderUtil.getColorToSlick(new java.awt.Color(207, 130, 16)));
+		g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(207, 130, 16)));
 		g2.fill(tangle);
 
 		g2.setColor(g2.getColor().darker());
@@ -52,7 +52,7 @@ public class GuiIngame extends Gui {
 
 		Rectangle tangle1 = new Rectangle(0, Display.getHeight() - 100, Display.getWidth() - 100, 100);
 
-		g2.setColor(RenderUtil.getColorToSlick(new java.awt.Color(255, 227, 89)));
+		g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(255, 227, 89)));
 		g2.fill(tangle1);
 
 		g2.setColor(g2.getColor().darker());
@@ -64,22 +64,22 @@ public class GuiIngame extends Gui {
 		g2.setColor(Color.yellow);
 		g2.draw(new Rectangle(5, Display.getHeight() - 95, 100, 30));
 
-		RenderUtil.resizeFont(g2, 16);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
-		FontUtils.drawRight(g2.getFont(), "$" + Game.player.money, 0, Display.getHeight() - 89, 100, g2.getColor());
-		RenderUtil.resetFont(g2);
+		FontHandler.resizeFont(g2, 16);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
+		org.newdawn.slick.util.FontUtils.drawRight(g2.getFont(), "$" + Game.player.money, 0, Display.getHeight() - 89, 100, g2.getColor());
+		FontHandler.resetFont(g2);
 
 		g2.setColor(Color.black);
-		RenderUtil.resizeFont(g2, 16);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
+		FontHandler.resizeFont(g2, 16);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
 		g2.drawString("Round: " + Game.player.round + "\nWave: " + Game.player.wave + "/" + Game.player.waveMax + "\nLives:" + Game.player.lives, 115, Display.getHeight() - 100);
-		RenderUtil.resetFont(g2);
+		FontHandler.resetFont(g2);
 
 		g2.setColor(Color.black);
-		RenderUtil.resizeFont(g2, 16);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
+		FontHandler.resizeFont(g2, 16);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
 		g2.drawString("Game speed: ", 5, Display.getHeight() - 45);
-		RenderUtil.resetFont(g2);
+		FontHandler.resetFont(g2);
 
 		Rectangle tangle2 = new Rectangle(240, Display.getHeight() - 100, 259, 100);
 
@@ -99,27 +99,27 @@ public class GuiIngame extends Gui {
 		String towerLefel = tower != null ? tower.getTurretLevel() + "/" + tower.getTurretMaxLevel() : "N/A";
 
 		g2.setColor(Color.black);
-		RenderUtil.resizeFont(g2, 16);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
+		FontHandler.resizeFont(g2, 16);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
 		g2.drawString("Selected: " + towerName, 250, Display.getHeight() - 100);
-		RenderUtil.resetFont(g2);
+		FontHandler.resetFont(g2);
 
 		g2.setColor(Color.black);
-		RenderUtil.resizeFont(g2, 11);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
+		FontHandler.resizeFont(g2, 11);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
 		g2.drawString("Damage: " + towerDamage + "\n" +
 				"Range: " + towerRange, 250, Display.getHeight() - 85);
 
 		g2.drawString("Level: " + towerLefel + "\n", 350, Display.getHeight() - 85);
-		RenderUtil.resetFont(g2);
+		FontHandler.resetFont(g2);
 
-		if(Game.world.getNode(WorldRender.mX, WorldRender.mY) instanceof Tower){
-			Tower turret = (Tower)Game.world.getNode(WorldRender.mX, WorldRender.mY);
+		if(Game.world.getTower(WorldRender.mX, WorldRender.mY) != null){
+			Tower turret = Game.world.getTower(WorldRender.mX, WorldRender.mY);
 			renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{turret.getTurretName(),"Level: " + turret.getTurretLevel() + "/" + turret.getTurretMaxLevel(), "Damage: " + Game.player.getTowerDamage(turret), "Range: " + Game.player.getTowerRange(turret), "", "Enemies killed: " + turret.getEnemiesKilledByTurret(), "Enemies in sight: " + turret.getEnemiesInSight(), "Attack time: " + turret.delay/100 + "/" + turret.getAttackDelay()});
 		}
 
 		for(Entity ent : Game.world.entities){
-			if(ent.isMouseOver(WorldRender.mouseX, WorldRender.mouseY, WorldRender.renderX, WorldRender.renderY)){
+			if(((GameEntity)ent).isMouseOver(WorldRender.mouseX, WorldRender.mouseY, WorldRender.renderX, WorldRender.renderY)){
 				renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{ent.getEntityName(), "Health: " + ent.getEntityHealth() + "/" + ent.getEntityMaxHealth()});
 			}
 		}
@@ -136,8 +136,8 @@ class shopButton extends GuiObject{
 
 	Tower tower;
 
-	public shopButton( int x, int y, int width, int height, Menu menu, Tower tower ) {
-		super(x, y, width, height, menu);
+	public shopButton( int x, int y, int width, int height, UIMenu menu, Tower tower ) {
+		super(Game.game,x, y, width, height, menu);
 
 		this.tower = tower;
 	}
@@ -145,7 +145,7 @@ class shopButton extends GuiObject{
 	boolean b = false;
 
 	@Override
-	public void onClicked( int button, int x, int y, Menu menu ) {
+	public void onClicked( int button, int x, int y, UIMenu menu ) {
 		if(b) {
 			GuiIngame.selectedTower = null;
 		}else{
@@ -154,12 +154,12 @@ class shopButton extends GuiObject{
 	}
 
 	@Override
-	public void renderObject( Graphics g2, Menu menu ) {
+	public void renderObject( Graphics g2, UIMenu menu ) {
 		b = GuiIngame.selectedTower != null;
 
 		Color c = isMouseOver() ? GuiIngame.selectedTower == tower ? Color.blue : Game.player.canAffordTower(tower) ? Color.gray : Color.gray.darker() : GuiIngame.selectedTower == tower ? Color.blue.darker().darker() : Game.player.canAffordTower(tower) ? Color.darkGray : Color.darkGray.darker();
-		int mouseX = Game.gameContainer.getInput().getMouseX();
-		int mouseY = Game.gameContainer.getInput().getMouseY();
+		int mouseX = container.getInput().getMouseX();
+		int mouseY = container.getInput().getMouseY();
 
 		if(isMouseOver()){
 			String[] tt = new String[]{ tower.getTurretName(), "Range: " + Game.player.getTowerRange(tower), "Damage: " + Game.player.getTowerDamage(tower), "Cost: " + Game.player.getCostFromTower(tower)};
@@ -177,17 +177,17 @@ class shopButton extends GuiObject{
 		tower.renderTower(g2, x + 5, y + 5, 32, 32);
 
 		g2.setColor(Color.yellow);
-		RenderUtil.resizeFont(g2, 11);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
+		FontHandler.resizeFont(g2, 11);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
 		g2.drawString("$" + Game.player.getCostFromTower(tower), x + 40, y + 4);
-		RenderUtil.resetFont(g2);
+		FontHandler.resetFont(g2);
 
 		g2.setColor(Color.orange);
-		RenderUtil.resizeFont(g2, 10);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
-		g2.drawString("RN: " + tower.getTurretRange(), x + 40, y + 18);
-		g2.drawString("DMG: " + tower.getTurretDamage(), x + 40, y + 26);
-		RenderUtil.resetFont(g2);
+		FontHandler.resizeFont(g2, 10);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
+		g2.drawString("RN: " + Game.player.getTowerRange(tower), x + 40, y + 18);
+		g2.drawString("DMG: " + Game.player.getTowerDamage(tower), x + 40, y + 26);
+		FontHandler.resetFont(g2);
 
 		g2.setClip(null);
 	}
@@ -195,12 +195,12 @@ class shopButton extends GuiObject{
 
 class upgradeButton extends GuiObject{
 
-	public upgradeButton( int x, int y, int width, int height, Menu menu ) {
-		super(x, y, width, height, menu);
+	public upgradeButton( int x, int y, int width, int height, UIMenu menu ) {
+		super(Game.game,x, y, width, height, menu);
 	}
 
 	@Override
-	public void onClicked( int button, int x, int y, Menu menu ) {
+	public void onClicked( int button, int x, int y, UIMenu menu ) {
 		if(WorldRender.towerSelected != null)
 		if(WorldRender.towerSelected.canUpgrade()){
 			if(Game.player.money >= WorldRender.towerSelected.getUpgradeCost()){
@@ -211,11 +211,11 @@ class upgradeButton extends GuiObject{
 	}
 
 	@Override
-	public void renderObject( Graphics g2, Menu menu ) {
+	public void renderObject( Graphics g2, UIMenu menu ) {
 		Rectangle tangle = new Rectangle(x, y, width, height);
 
-		int mouseX = Game.gameContainer.getInput().getMouseX();
-		int mouseY = Game.gameContainer.getInput().getMouseY();
+		int mouseX = container.getInput().getMouseX();
+		int mouseY = container.getInput().getMouseY();
 
 		boolean hasUpgrade = WorldRender.towerSelected != null && WorldRender.towerSelected.canUpgrade();
 		boolean canAfford = hasUpgrade && Game.player.money >= WorldRender.towerSelected.getUpgradeCost();
@@ -235,10 +235,10 @@ class upgradeButton extends GuiObject{
 		g2.setClip(tangle);
 
 		if(WorldRender.towerSelected != null) {
-			RenderUtil.resizeFont(g2, 14);
-			RenderUtil.changeFontStyle(g2, Font.BOLD);
+			FontHandler.resizeFont(g2, 14);
+			FontHandler.changeFontStyle(g2, Font.BOLD);
 			g2.drawString(hasUpgrade ? "Upgrade cost: $" + WorldRender.towerSelected.getUpgradeCost() : "", x + 5, y + 3);
-			RenderUtil.resetFont(g2);
+			FontHandler.resetFont(g2);
 		}
 
 		g2.setClip(null);
@@ -247,12 +247,12 @@ class upgradeButton extends GuiObject{
 
 class sellButton extends GuiObject{
 
-	public sellButton( int x, int y, int width, int height, Menu menu ) {
-		super(x, y, width, height, menu);
+	public sellButton( int x, int y, int width, int height, UIMenu menu ) {
+		super(Game.game,x, y, width, height, menu);
 	}
 
 	@Override
-	public void onClicked( int button, int x, int y, Menu menu ) {
+	public void onClicked( int button, int x, int y, UIMenu menu ) {
 		if(WorldRender.towerSelected != null) {
 			Game.player.money += WorldRender.towerSelected.getTurretSellAmount();
 			Game.world.setTower(null, WorldRender.towerSelected.x, WorldRender.towerSelected.y);
@@ -262,11 +262,11 @@ class sellButton extends GuiObject{
 	}
 
 	@Override
-	public void renderObject( Graphics g2, Menu menu ) {
+	public void renderObject( Graphics g2, UIMenu menu ) {
 		Rectangle tangle = new Rectangle(x, y, width, height);
 
-		int mouseX = Game.gameContainer.getInput().getMouseX();
-		int mouseY = Game.gameContainer.getInput().getMouseY();
+		int mouseX = container.getInput().getMouseX();
+		int mouseY = container.getInput().getMouseY();
 
 
 		g2.setColor(isMouseOver() ? Color.lightGray : Color.gray);
@@ -282,10 +282,10 @@ class sellButton extends GuiObject{
 		g2.setClip(tangle);
 
 		if(WorldRender.towerSelected != null) {
-			RenderUtil.resizeFont(g2, 14);
-			RenderUtil.changeFontStyle(g2, Font.BOLD);
+			FontHandler.resizeFont(g2, 14);
+			FontHandler.changeFontStyle(g2, Font.BOLD);
 			g2.drawString("Sell tower for: $" + WorldRender.towerSelected.getTurretSellAmount(), x + 5, y + 3);
-			RenderUtil.resetFont(g2);
+			FontHandler.resetFont(g2);
 		}
 
 		g2.setClip(null);
@@ -296,18 +296,18 @@ class speedButton extends GuiObject{
 
 	int speed;
 
-	public speedButton(int x, int y, int width, int height, Menu menu, int speed) {
-		super(x, y, width, height, menu);
+	public speedButton( int x, int y, int width, int height, UIMenu menu, int speed) {
+		super(Game.game,x, y, width, height, menu);
 		this.speed = speed;
 	}
 
 	@Override
-	public void onClicked(int button, int x, int y, Menu menu) {
+	public void onClicked(int button, int x, int y, UIMenu menu) {
 		Game.gameSpeed = speed;
 	}
 
 	@Override
-	public void renderObject(Graphics g2, Menu menu) {
+	public void renderObject(Graphics g2, UIMenu menu) {
 		Rectangle rectangle = new Rectangle(x, y, width, height);
 
 		g2.setColor(Game.gameSpeed == speed ? Color.yellow.darker() : isMouseOver() ? Color.orange.darker() : Color.orange.darker().darker());
@@ -318,10 +318,10 @@ class speedButton extends GuiObject{
 
 		g2.setColor(Color.yellow);
 
-		RenderUtil.resizeFont(g2, 12);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
+		FontHandler.resizeFont(g2, 12);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
 		g2.drawString(speed == 0 ? "||" : (speed + "x"), x + (speed == 0 ? 6 : 2), y + (speed == 0 ? 2 : 3));
-		RenderUtil.resetFont(g2);
+		FontHandler.resetFont(g2);
 
 	}
 }

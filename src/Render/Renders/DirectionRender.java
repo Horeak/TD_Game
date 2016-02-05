@@ -2,7 +2,7 @@ package Render.Renders;
 
 import Main.Game;
 import PathFinding.Utils.Path;
-import Render.AbstractWindowRender;
+import Rendering.AbstractWindowRender;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Circle;
@@ -13,6 +13,9 @@ public class DirectionRender extends AbstractWindowRender {
 
 	@Override
 	public void render(Graphics g2) {
+		if(Game.world == null || Game.world.enemyPath == null)
+			return;
+
 		if(Game.world != null && x == 0 && y == 0){
 			x = Game.world.getStartNode().x;
 			y = Game.world.getStartNode().y;

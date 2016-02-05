@@ -1,6 +1,6 @@
 package Effects;
 
-import Entities.Entity;
+import EntityFiles.Entity;
 
 public abstract class Effect {
 	//The time in seconds the effect will last

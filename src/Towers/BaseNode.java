@@ -2,7 +2,7 @@ package Towers;
 
 import Map.World;
 import PathFinding.Utils.Node;
-import Utils.RenderUtil;
+import Utils.FontHandler;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
@@ -28,13 +28,13 @@ public class BaseNode extends Node {
 	}
 
 	public Color getColor(){
-		if(getValue("openPathNode") != null && (boolean)getValue("openPathNode") == true && !isPath) return RenderUtil.getColorToSlick(new java.awt.Color(255, 215, 109)).darker(0.15f);
+		if(getValue("openPathNode") != null && (boolean)getValue("openPathNode") == true && !isPath) return FontHandler.getColorToSlick(new java.awt.Color(255, 215, 109)).darker(0.15f);
 
-//		if(Game.world != null && Game.world.getStartNode() != null && Game.world.getStartNode().x == x && Game.world.getStartNode().y == y) return Color.green.darker();
-//		if(Game.world != null && Game.world.getEndNode() != null && Game.world.getEndNode().x == x && Game.world.getEndNode().y == y) return Color.red.darker();
+//		if(GameFiles.world != null && GameFiles.world.getStartNode() != null && GameFiles.world.getStartNode().x == x && GameFiles.world.getStartNode().y == y) return Color.green.darker();
+//		if(GameFiles.world != null && GameFiles.world.getEndNode() != null && GameFiles.world.getEndNode().x == x && GameFiles.world.getEndNode().y == y) return Color.red.darker();
 
 		if(isPath){
-			return RenderUtil.getColorToSlick(new java.awt.Color(255, 215, 109));
+			return FontHandler.getColorToSlick(new java.awt.Color(255, 215, 109));
 		}
 
 		if(value < -3) return Color.blue.darker(0.25f);

@@ -6,7 +6,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
 
-public class TestEntity extends Entity {
+public class TestEntity extends GameEntity {
 
 	public TestEntity(World world, float x, float y) {
 		super(world, x, y);

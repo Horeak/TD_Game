@@ -1,18 +1,19 @@
 package Guis.Interfaces;
 
+import Interface.UIMenu;
 import Main.Game;
 import Map.World;
 import PathFinding.Utils.Node;
 import Towers.BaseNode;
 import Utils.Difficulty;
-import Utils.RenderUtil;
+import Utils.FontHandler;
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
 
 import java.awt.*;
 
-public class BackgroundMenu extends Guis.Menu {
+public class BackgroundMenu extends UIMenu {
 	public static World world;
 
 	public BackgroundMenu(){
@@ -37,7 +38,7 @@ public class BackgroundMenu extends Guis.Menu {
 			}
 		}
 
-		g2.setColor(RenderUtil.getColorToSlick(new Color(194, 194, 194, 70)));
+		g2.setColor(FontHandler.getColorToSlick(new Color(194, 194, 194, 70)));
 		g2.fill(new Rectangle(0,0,Display.getWidth(), Display.getHeight()));
 	}
 

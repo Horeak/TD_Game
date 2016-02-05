@@ -1,9 +1,12 @@
 package Towers;
 
-import Entities.Entity;
+import Entities.GameEntity;
+import EntityFiles.Entity;
 import Main.Game;
 import Map.World;
 import org.newdawn.slick.Graphics;
+
+import java.util.ConcurrentModificationException;
 
 public abstract class Tower extends BaseNode implements Cloneable{
 	public Tower( World world, int x, int y){
@@ -12,14 +15,16 @@ public abstract class Tower extends BaseNode implements Cloneable{
 
 	public int delay;
 	private int killedByTurret = 0;
+	public int level = 1;
 
 	//Add getTarget
 	public abstract String getTurretName();
 
+	//TODO Change it where base Tower class has a level veriable so upgrade method is just for special cases
 	public abstract int getTurretMaxLevel();
-	public abstract int getTurretLevel();
+	public int getTurretLevel(){return level;}
 	public abstract boolean canUpgrade();
-	public abstract void upgradeTurret();
+	public void upgradeTurret(){level += 1;}
 
 	public abstract int getUpgradeCost();
 	public abstract int getTurretCost();
@@ -31,7 +36,7 @@ public abstract class Tower extends BaseNode implements Cloneable{
 	public abstract int getTurretRange();
 	public abstract int getTurretDamage();
 
-	public void attackEntity(Entity ent){
+	public void attackEntity(GameEntity ent){
 		if(ent != null) {
 			ent.setEntityHealth(ent.getEntityHealth() - getTurretDamage());
 
@@ -48,12 +53,18 @@ public abstract class Tower extends BaseNode implements Cloneable{
 
 
 	//TODO Currently targetting the entity with the highest health.(Pherhaps make it level based. (For example the harder the enemy the higher the level the higher the targeting chance))
-	public Entity getTarget(){
-		Entity ent = null;
+	public GameEntity getTarget(){
+		GameEntity ent = null;
 
-		for(Entity entt : world.getEntitiesNearTurret(this)){
-			if(ent == null || entt.getEntityHealth() > ent.getEntityHealth()){
-				ent = entt;
+		try {
+			for (Entity entt : world.getEntitiesNearTurret(this)) {
+				if (ent == null || entt.getEntityHealth() > ent.getEntityHealth()) {
+					ent = (GameEntity)entt;
+				}
+			}
+		}catch (Exception e){
+			if(!(e instanceof ConcurrentModificationException)){
+				e.printStackTrace();
 			}
 		}
 

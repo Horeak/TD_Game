@@ -3,7 +3,7 @@ package Render.Renders;
 import Guis.Interfaces.GuiIngame;
 import Main.Game;
 import PathFinding.Utils.Node;
-import Render.AbstractWindowRender;
+import Rendering.AbstractWindowRender;
 import Towers.BaseNode;
 import Towers.Tower;
 import org.newdawn.slick.Color;
@@ -33,8 +33,8 @@ public class WorldRender extends AbstractWindowRender {
 		renderX = Game.gameWindowX / Game.world.xSize;
 		renderY = Game.gameWindowY / Game.world.ySize;
 
-		mouseX = Game.gameContainer.getInput().getMouseX();
-		mouseY = Game.gameContainer.getInput().getMouseY();
+		mouseX = Game.game.gameContainer.getInput().getMouseX();
+		mouseY = Game.game.gameContainer.getInput().getMouseY();
 
 		mX = (int) (mouseX / renderX);
 		mY = (int) (mouseY / renderY);
@@ -46,8 +46,8 @@ public class WorldRender extends AbstractWindowRender {
 				Node node = Game.world.getNode(x, y);
 
 				if(node != null && node instanceof BaseNode){
-					if(node instanceof Tower){
-						td.add((Tower)node);
+					if(Game.world.getTower(x, y) != null){
+						td.add(Game.world.getTower(x, y));
 						continue;
 					}
 
@@ -62,7 +62,7 @@ public class WorldRender extends AbstractWindowRender {
 		}
 
 		if(Game.ingame){
-			boolean tt = towerSelected == null || towerSelected.x != mX && Game.world.getNode(mX, mY) instanceof Tower || towerSelected.y != mY && Game.world.getNode(mX, mY) instanceof Tower || !(Game.world.getNode(mX, mY) instanceof Tower);
+			boolean tt = towerSelected == null || towerSelected.x != mX && Game.world.getTower(mX, mY) != null || towerSelected.y != mY && Game.world.getTower(mX, mY) != null || (Game.world.getTower(mX, mY) == null);
 			if(towerSelected != null && (tt)){
 				Color g = Color.orange;
 				g = new Color(g.getRed(), g.getGreen(), g.getBlue(), 100);
@@ -78,12 +78,11 @@ public class WorldRender extends AbstractWindowRender {
 				g2.setColor(Color.black);
 				g2.draw(new Rectangle(mX * renderX, mY * renderY, renderX, renderY));
 
-				if(Game.world.getNode(mX, mY) instanceof Tower){
-					Tower tower = (Tower)Game.world.getNode(mX, mY);
+				if(Game.world.getTower(mX, mY) != null){
+					Tower tower = Game.world.getTower(mX, mY);
 
 					Color g = Color.white;
 					g = new Color(g.getRed(), g.getGreen(), g.getBlue(), 100);
-
 					g2.setColor(g);
 					g2.fill(new Circle(((tower.x) * renderX)  + (renderX / 2), ((tower.y) * (int)renderY)  + (renderY / 2), (Game.player.getTowerRange(tower) * ((renderX + renderY) / 2))));
 
@@ -95,7 +94,7 @@ public class WorldRender extends AbstractWindowRender {
 
 			if(GuiIngame.selectedTower != null){
 				GuiIngame.selectedTower.renderTower(g2, mouseX - (int) (renderX / 2), mouseY - (int) (renderY / 2), (int) renderX, (int) renderY);
-					Color g = Game.player.canAffordTower(GuiIngame.selectedTower) && !(Game.world.getNode(mX, mY) instanceof Tower) && t ? Color.green.darker() : Color.red.darker();
+					Color g = Game.player.canAffordTower(GuiIngame.selectedTower) && (Game.world.getTower(mX, mY) == null) && t ? Color.green.darker() : Color.red.darker();
 					g = new Color(g.getRed(), g.getGreen(), g.getBlue(), 100);
 
 					g2.setColor(g);
@@ -122,16 +121,16 @@ public class WorldRender extends AbstractWindowRender {
 
 		boolean t = Game.world.validNode(null, mX, mY) || Game.world.getNode(mX, mY) != null && Game.world.getNode(mX,mY) instanceof BaseNode && ((BaseNode)Game.world.getNode(mX,mY)).value > 0 && !((BaseNode) Game.world.getNode(mX, mY)).isPath && ((BaseNode) Game.world.getNode(mX, mY)).value != 100;
 
-		if(Game.world.getNode(mX,mY) instanceof Tower){
-			if(towerSelected != null && towerSelected.x == mX && towerSelected.y == mY || towerSelected == null && !(Game.world.getNode(mX, mY) instanceof Tower)){
+		if(Game.world.getTower(mX,mY) != null){
+			if(towerSelected != null && towerSelected.x == mX && towerSelected.y == mY || towerSelected == null && (Game.world.getTower(mX, mY) == null)){
 				towerSelected = null;
 			}else{
-				towerSelected = (Tower)Game.world.getNode(mX, mY);
+				towerSelected = (Tower)Game.world.getTower(mX, mY);
 			}
 		}
 
 		if(GuiIngame.selectedTower != null) {
-			if (Game.player.canAffordTower(GuiIngame.selectedTower) && !(Game.world.getNode(mX, mY) instanceof Tower) && t) {
+			if (Game.player.canAffordTower(GuiIngame.selectedTower) && (Game.world.getTower(mX, mY) == null) && t) {
 				if (mouseX > 0 && mouseY > 0 && mouseX < Game.gameWindowX && mouseY < Game.gameWindowY) {
 					Game.player.money -= Game.player.getCostFromTower(GuiIngame.selectedTower);
 					Game.world.setTower((Tower) GuiIngame.selectedTower.clone(), mX, mY);

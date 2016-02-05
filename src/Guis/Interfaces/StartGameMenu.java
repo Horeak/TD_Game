@@ -2,16 +2,16 @@ package Guis.Interfaces;
 
 
 import Guis.Button.DifficultyButton;
-import Guis.GuiObject;
-import Guis.Menu;
+import Interface.GuiObject;
+import Interface.UIMenu;
 import Main.Game;
+import Map.World;
 import Utils.Difficulty;
 import Utils.EnumWorldSize;
-import Utils.RenderUtil;
+import Utils.FontHandler;
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
-import org.newdawn.slick.util.FontUtils;
 
 import java.awt.*;
 
@@ -33,60 +33,136 @@ public class StartGameMenu extends BackgroundMenu {
 		//TODO Add start button
 
 		guiObjects.add(new backButton(40 + width, 500, width, 40, this));
+		guiObjects.add(new startButton(40 + width, 450, width, 40, this));
 	}
 
 	@Override
 	public void render( Graphics g2 ) {
 		super.render(g2);
 
-		g2.setColor(RenderUtil.getColorToSlick(new java.awt.Color(194, 194, 194, 100)));
+		g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(194, 194, 194, 100)));
 		g2.fill(new org.newdawn.slick.geom.Rectangle(0,0, Display.getWidth(), Display.getHeight()));
+
+		for(GuiObject ob : guiObjects){
+			if(ob instanceof startButton){
+				boolean mapSize = false, difficulty = false;
+
+				for(GuiObject ob1 : guiObjects){
+					if(ob1 instanceof worldSizeButton){
+						if(((worldSizeButton)ob1).selected){
+							mapSize = true;
+							continue;
+						}
+					}else if (ob1 instanceof DifficultyButton){
+						if(((DifficultyButton)ob1).selected){
+							difficulty = true;
+							continue;
+						}
+					}
+				}
+				((startButton)ob).enabled = mapSize && difficulty;
+			}
+		}
 	}
 }
 
 class backButton extends GuiObject {
 
 	int i = 0;
-	public backButton( int x, int y, int width, int height, Menu menu ) {
-		super(x, y, width, height, menu);
+	public backButton( int x, int y, int width, int height, UIMenu menu ) {
+		super(Game.game,x, y, width, height, menu);
 	}
 
 	@Override
-	public void onClicked( int button, int x, int y, Menu menu ) {
+	public void onClicked( int button, int x, int y, UIMenu menu ) {
 		if(i > 3) {
-			Main.Game.menu = new MainMenu();
+			Game.game.setCurrentMenu(new MainMenu());
 		}
 	}
 
 	@Override
-	public void renderObject( Graphics g2, Menu menu ) {
+	public void renderObject( Graphics g2, UIMenu menu ) {
 		i += 1;
 
-		g2.setColor(isMouseOver() ? RenderUtil.getColorToSlick(new java.awt.Color(200, 200, 200, 255)) : RenderUtil.getColorToSlick(new java.awt.Color(194, 194, 194, 200)));
+		g2.setColor(isMouseOver() ? FontHandler.getColorToSlick(new java.awt.Color(200, 200, 200, 255)) : FontHandler.getColorToSlick(new java.awt.Color(194, 194, 194, 200)));
 		g2.fill(new Rectangle(x, y, width, height));
 
 		g2.setColor(org.newdawn.slick.Color.black);
 		g2.draw(new Rectangle(x,y, width, height));
 
-		RenderUtil.resizeFont(g2, 16);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
-		FontUtils.drawCenter(g2.getFont(), "Back", x, y + (height / 4), width - 2, g2.getColor());
-		RenderUtil.resetFont(g2);
+		FontHandler.resizeFont(g2, 16);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
+		org.newdawn.slick.util.FontUtils.drawCenter(g2.getFont(), "Back", x, y + (height / 4), width - 2, g2.getColor());
+		FontHandler.resetFont(g2);
+	}
+}
+
+class startButton extends GuiObject{
+
+	public startButton( int x, int y, int width, int height, UIMenu menu ) {
+		super(Game.game,x, y, width, height, menu);
+	}
+
+	@Override
+	public void onClicked( int button, int x, int y, UIMenu menu ) {
+		if(enabled){
+			EnumWorldSize worldSize = null;
+			Difficulty diff = null;
+
+			for(GuiObject ob1 : menu.guiObjects){
+				if(diff != null && worldSize != null) break;
+
+				if(ob1 instanceof worldSizeButton){
+					if(((worldSizeButton)ob1).selected){
+						worldSize = ((worldSizeButton)ob1).worldSize;
+						continue;
+					}
+				}else if (ob1 instanceof DifficultyButton){
+					if(((DifficultyButton)ob1).selected){
+						diff = ((DifficultyButton)ob1).difficulty;
+						continue;
+					}
+				}
+			}
+
+			if(diff != null && worldSize != null){
+				Game.world = new World(worldSize.xSize, worldSize.ySize, diff);
+				Game.world.initMap();
+
+				Game.player.lives = diff.lives;
+
+				Game.ingame = true;
+				Game.game.setCurrentMenu(new GuiIngame());
+			}
+		}
+	}
+
+	@Override
+	public void renderObject( Graphics g2, UIMenu menu ) {
+		g2.setColor(!enabled ? isMouseOver() ? FontHandler.getColorToSlick(new java.awt.Color(200, 200, 200, 255)) : FontHandler.getColorToSlick(new java.awt.Color(194, 194, 194, 200)) : FontHandler.getColorToSlick(new java.awt.Color(230, 230, 230, 200)));
+		g2.fill(new Rectangle(x, y, width, height));
+
+		g2.setColor(org.newdawn.slick.Color.black);
+		g2.draw(new Rectangle(x,y, width, height));
+
+		FontHandler.resizeFont(g2, 16);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
+		org.newdawn.slick.util.FontUtils.drawCenter(g2.getFont(), "Start", x, y + (height / 4), width - 2, g2.getColor());
+		FontHandler.resetFont(g2);
 	}
 }
 
 class worldSizeButton extends GuiObject{
 	boolean selected = false;
-
 	EnumWorldSize worldSize;
-
-	public worldSizeButton(int x, int y, int width, int height, Menu menu, EnumWorldSize enumWorldSize) {
-		super(x, y, width, height, menu);
+	public worldSizeButton( int x, int y, int width, int height, UIMenu menu, EnumWorldSize enumWorldSize) {
+		super(Game.game, x, y, width, height, menu);
 		this.worldSize = enumWorldSize;
+
 	}
 
 	@Override
-	public void onClicked(int button, int x, int y, Menu menu) {
+	public void onClicked(int button, int x, int y, UIMenu menu) {
 	selected ^= true;
 
 		for(GuiObject ob : menu.guiObjects){
@@ -99,37 +175,35 @@ class worldSizeButton extends GuiObject{
 	}
 
 	@Override
-	public void renderObject(Graphics g2, Menu menu) {
-		g2.setColor(selected ? RenderUtil.getColorToSlick(new java.awt.Color(220, 220, 220, 255)) : isMouseOver() ? RenderUtil.getColorToSlick(new java.awt.Color(200, 200, 200, 255)) : RenderUtil.getColorToSlick(new java.awt.Color(194, 194, 194, 200)));
+	public void renderObject(Graphics g2, UIMenu menu) {
+		g2.setColor(selected ? FontHandler.getColorToSlick(new java.awt.Color(220, 220, 220, 255)) : isMouseOver() ? FontHandler.getColorToSlick(new java.awt.Color(200, 200, 200, 255)) : FontHandler.getColorToSlick(new java.awt.Color(194, 194, 194, 200)));
 		g2.fill(new Rectangle(x, y, width, height));
 
 		g2.setColor(selected ? org.newdawn.slick.Color.black : org.newdawn.slick.Color.darkGray);
 		g2.draw(new Rectangle(x,y, width, height));
 
-		g2.setColor(org.newdawn.slick.Color.black);
 
 		g2.setColor(org.newdawn.slick.Color.black);
-		RenderUtil.resizeFont(g2, 16);
-		RenderUtil.changeFontStyle(g2, Font.BOLD);
-		FontUtils.drawCenter(g2.getFont(), worldSize.name(), x, y + 10, width, g2.getColor());
-		RenderUtil.resetFont(g2);
+		FontHandler.resizeFont(g2, 16);
+		FontHandler.changeFontStyle(g2, Font.BOLD);
+		org.newdawn.slick.util.FontUtils.drawCenter(g2.getFont(), worldSize.name(), x, y + 10, width, g2.getColor());
+		FontHandler.resetFont(g2);
 
 		Rectangle rect = new Rectangle(x + (width / 4), y + (width / 4), width / 2, height / 2);
 		g2.draw(rect);
-
 		g2.drawLine(rect.getX() - 10, rect.getY() - 1, rect.getX() - 10, rect.getMaxY() - 1);
 
 		g2.pushTransform();
 		g2.rotate(rect.getX() - 15, rect.getCenterY() - 1, -90);
-		RenderUtil.resizeFont(g2, 12);
+		FontHandler.resizeFont(g2, 12);
 		g2.drawString(worldSize.ySize + "", rect.getX() - 25, rect.getCenterY() - 10);
-		RenderUtil.resetFont(g2);
+		FontHandler.resetFont(g2);
 		g2.popTransform();
 
 		g2.drawLine(rect.getX() - 1, rect.getMaxY() + 10, rect.getMaxX() - 1, rect.getMaxY() + 10);
-		RenderUtil.resizeFont(g2, 12);
+		FontHandler.resizeFont(g2, 12);
 		g2.drawString(worldSize.xSize + "", rect.getCenterX() - 10, rect.getMaxY() + 10);
-		RenderUtil.resetFont(g2);
+		FontHandler.resetFont(g2);
 
 	}
 }
