@@ -1,6 +1,6 @@
 package Map;
 
-import EntityFiles.Entity;
+import Entities.GameEntity;
 import Main.Game;
 import NoiseGenerator.PerlinNoiseGenerator;
 import PathFinding.Interfaces.MovingObject;
@@ -11,15 +11,20 @@ import PathFinding.Utils.Path;
 import Towers.BaseNode;
 import Towers.Tower;
 import Utils.Difficulty;
+import Utils.LoggerUtil;
+import Utils.TimeTaker;
 import Utils.UpdateThread;
 import World.WorldBase;
 import org.newdawn.slick.geom.Circle;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 public class World  extends WorldBase implements NodeMap{
-	public UpdateThread updateThread = new UpdateThread();
+	public ArrayList<GameEntity> entities = new ArrayList<>();
+
+	public UpdateThread updateThread = new UpdateThread();//TODO: Add wave control thread
 
 	public Node[][] nodes;
 	public Tower[][] towers;
@@ -42,13 +47,14 @@ public class World  extends WorldBase implements NodeMap{
 		updateThread.start();
 	}
 
-	public ArrayList<Entity> getEntitiesNearTurret( Tower tower ){
-		ArrayList<Entity> ents = new ArrayList<>();
+	public ArrayList<GameEntity> getEntitiesNearTurret( Tower tower ){
+		ArrayList<GameEntity> ents = new ArrayList<>();
 
 		try {
-			for (Entity ent : entities) {
+			for (GameEntity ent : new ArrayList<GameEntity>(entities)) {
 				Circle cir = new Circle(tower.x, tower.y, Game.player.getTowerRange(tower));
 
+				if(cir != null && ent != null)
 				if (cir.contains(ent.x, ent.y)) {
 					ents.add(ent);
 				}
@@ -112,12 +118,14 @@ public class World  extends WorldBase implements NodeMap{
 	//TODO Optimize world generation to decrease loading times (For example do not regenerate world if path is not valid)
 	@Override
 	public void initMap() {
+		TimeTaker.startTimeTaker("worldGenerate");
+
 		for(int x = 0; x < xSize; x++){
 			for(int y = 0; y < ySize; y++){
 				setNode(createNode(x, y));
 			}
 		}
-		//TODO Improve world decoration
+		//TODO: Add random variation to each empty node to make it look better
 		float res = (((xSize / 2) + (Game.rand.nextInt(xSize / 2)) + ((ySize / 2) + (Game.rand.nextInt(ySize / 2)))) / 2F);
 
 		PerlinNoiseGenerator generator = new PerlinNoiseGenerator(Game.rand.nextLong());
@@ -128,13 +136,14 @@ public class World  extends WorldBase implements NodeMap{
 				double tile = (generator.noise((x / res), (y / res)) * 8);
 
 				if(getNode(x,y) instanceof BaseNode){
-					((BaseNode)getNode(x,y)).value = (float)tile;
+					((BaseNode)getNode(x,y)).setValue((float)tile);
 				}
 			}
 		}
 
+		//TODO: World is still being generated without a path
 		SwingUtilities.invokeLater(() -> {
-			int genAttempts = 0, attemptsToReset = 10;
+			int genAttempts = 0, attemptsToReset = 10;//TODO Attempts=worldxsize + worldysize / 2
 
 			generatePath:
 			for(int i = 0; i < attemptsToReset; i++){
@@ -171,11 +180,31 @@ public class World  extends WorldBase implements NodeMap{
 				}
 
 				if(gen == 0){
-					setStartNode(createNode(topStart.get(Game.rand.nextInt(topStart.size())), 0));
-					setEndNode(createNode(bottomEnd.get(Game.rand.nextInt(bottomEnd.size())), ySize - 1));
+					if(topStart.size() <= 0 || bottomEnd.size() <= 0) continue generatePath;
+
+					int startX = topStart.get(Game.rand.nextInt(topStart.size())), startY = 0;
+					int endX = bottomEnd.get(Game.rand.nextInt(bottomEnd.size())), endY = ySize - 1;
+
+					float v1 = ((BaseNode)getNode(startX, startY)).getValue(), v2 = ((BaseNode)getNode(endX, endY)).getValue();
+
+					setStartNode(createNode(startX, startY));
+					setEndNode(createNode(endX, endY));
+
+					((BaseNode)getNode(startX, startY)).setValue(v1);
+					((BaseNode)getNode(endX, endY)).setValue(v2);
 				}else{
-					setStartNode(createNode(0, leftStart.get(Game.rand.nextInt(leftStart.size()))));
-					setEndNode(createNode(xSize - 1, rightEnd.get(Game.rand.nextInt(rightEnd.size()))));
+					if(leftStart.size() <= 0 || rightEnd.size() <= 0) continue generatePath;
+
+					int startX = 0, startY = leftStart.get(Game.rand.nextInt(leftStart.size()));
+					int endX = xSize - 1, endY = rightEnd.get(Game.rand.nextInt(rightEnd.size()));
+
+					float v1 = ((BaseNode)getNode(startX, startY)).getValue(), v2 = ((BaseNode)getNode(endX, endY)).getValue();
+
+					setStartNode(createNode(startX, startY));
+					setEndNode(createNode(endX, endY));
+
+					((BaseNode)getNode(startX, startY)).setValue(v1);
+					((BaseNode)getNode(endX, endY)).setValue(v2);
 				}
 
 				try {
@@ -200,7 +229,19 @@ public class World  extends WorldBase implements NodeMap{
 					}
 
 					if(enemyPath == null){
-						throw new Exception("ERROR: path failed to generate!");
+						System.err.println("Was unable to generate path within limit of " + attemptsToReset + " tries.");
+
+						setStartNode(null);
+						setEndNode(null);
+
+						return;
+					}
+
+					{
+
+						LoggerUtil.out.log(Level.INFO, "World generation sucsessfull. (" + TimeTaker.getText("worldGenerate", "<days>, <hours>, <mins>, <secs>, <ms>", true) + ")");
+						LoggerUtil.out.log(Level.INFO, "World was generated in " + (gen + 1) + " tries.");
+						LoggerUtil.out.log(Level.INFO, "World path was: " + enemyPath);
 					}
 
 					break;
@@ -265,7 +306,7 @@ public class World  extends WorldBase implements NodeMap{
 
 	@Override
 	public boolean validNode( MovingObject movingObject, int x, int y ) {
-		return getNode(x, y) instanceof BaseNode && !((BaseNode)getNode(x,y)).isPath && ((BaseNode)getNode(x,y)).value <= 1 && ((BaseNode)getNode(x,y)).value >= -2 && getTower(x, y) == null;
+		return getNode(x, y) instanceof BaseNode && !((BaseNode)getNode(x,y)).isPath && ((BaseNode)getNode(x,y)).getValue() <= 1 && ((BaseNode)getNode(x,y)).getValue() >= -2 && getTower(x, y) == null;
 	}
 
 	@Override
@@ -276,7 +317,63 @@ public class World  extends WorldBase implements NodeMap{
 
 	//TODO Start working on wave system. (Get the amount of enemies, the delay between them, delay between the waves....)
 	//TODO When wave system is done start actuly spawning the enemies after about 20-60sec after getting into the game or add somekind of start button. (Perhaps start on gameSpeed 0? and start by selecting another speed)
-	public void updateGame(){
+
+
+	//delayNextRound=Delay between changing waves/rounds
+	//delaySpawn=Delay between each mob being spawned from the current wave spawn
+	public int delayNextRound, delaySpawn = 0;
+	public final int timeToSpawn = 200, timeToNextRound = 1000;
+	public ArrayList<GameEntity> mobs;
+
+	public synchronized void updateGame(){
+		//TODO Add a longer delay then for normal rounds
+		if(Game.player.round == 0){
+			Game.player.round = 1;
+			Game.player.wave = 1;
+			Game.player.waveMax = 10;
+
+			mobs = Game.player.getEntitiesForRound(Game.player.wave, Game.player.round);
+		}
+
+
+		//TODO Make time between waves shorter and make time between rounds either remain the same or increase it
+		//Spawn the mobs from the mobs list and then remove them from the list
+		if(mobs != null) {
+			if (mobs.size() >= 1) {
+					if (delaySpawn >= timeToSpawn) {
+						if(mobs.get(0) != null) {
+							entities.add(mobs.get(0));
+							mobs.remove(0);
+							delaySpawn = 0;
+						}
+					} else {
+						delaySpawn += Game.gameSpeed;
+					}
+
+				}
+			}
+
+		//Increase wave/round number when all mobs are dead
+			if (mobs != null && mobs.size() <= 0 && entities.size() <= 0) {
+				if (delayNextRound >= timeToNextRound) {
+					delayNextRound = 0;
+
+					if (Game.player.wave < Game.player.waveMax) {
+						Game.player.wave += 1;
+					} else {
+						Game.player.round += 1;
+						Game.player.wave = 1;
+					}
+
+					mobs = Game.player.getEntitiesForRound(Game.player.wave, Game.player.round);
+				} else {
+					delayNextRound += Game.gameSpeed;
+				}
+			} else {
+				delayNextRound = 0;
+			}
+
+
 		if(enemyPath == null || enemyPath.steps == null) return;
 
 		for(int x = 0; x < xSize; x++){
@@ -285,23 +382,27 @@ public class World  extends WorldBase implements NodeMap{
 					Tower tower = getTower(x,y);
 
 					//TODO Fix towerAttackDelay
-					if(tower.delay >= (tower.getAttackDelay() * (100))){
+					if(tower.getCurrentDelay() >= (tower.getAttackDelay() * (100))){
 						if(tower.getTarget() != null) {
-							tower.delay = 0;
+							tower.setCurrentDelay(0);
 							tower.attackEntity(tower.getTarget());
 						}
 					}else{
-						tower.delay += 1 * Game.gameSpeed;
+						tower.setCurrentDelay(tower.getCurrentDelay() + 1 * Game.gameSpeed);
 					}
 
 				}
 			}
 		}
 
-		ArrayList<Entity> removeEnt = new ArrayList<>(entities);
+		ArrayList<GameEntity> removeEnt = new ArrayList<>(entities);
 
 		//ConcurrentModificationException...
-		for(Entity ent : entities){
+		for(GameEntity ent : new ArrayList<>(entities)){
+			if(ent == null) continue;
+
+			ent.updateEntityBase();
+
 			boolean found = false;
 
 			if(ent.getEntityHealth() <= 0){
@@ -321,9 +422,11 @@ public class World  extends WorldBase implements NodeMap{
 					float xx = step.getX() - ent.x;
 					float yy = step.getY() - ent.y;
 
-					//TODO Improve movement amount. It seems to be almost random now.
-					ent.x += (xx * 0.08F) / (10 / Game.gameSpeed);
-					ent.y += (yy * 0.08F) / (10 / Game.gameSpeed);
+					if(Game.gameSpeed != 0) {
+						//TODO Improve movement amount. It seems to be almost random now.
+						ent.x += (xx * (ent.getMovementSpeed() / 100)) / (10 / Game.gameSpeed);
+						ent.y += (yy * (ent.getMovementSpeed() / 100)) / (10 / Game.gameSpeed);
+					}
 
 					break;
 				}
@@ -331,20 +434,19 @@ public class World  extends WorldBase implements NodeMap{
 
 			if(Math.round(ent.x) == Game.world.getEndNode().x && Math.round(ent.y) == Game.world.getEndNode().y){
 				removeEnt.remove(ent);
-				Game.player.lives -= 1;
+				Game.player.lives -= ent.getEntityHealth() >= 10 ? ent.getEntityHealth() / 10 : 1;
 				loseCheck();
 			}
 
 		}
 
 		entities = removeEnt;
-		loseCheck();
 	}
 
 	public void loseCheck(){
 		if(Game.player.lives <= 0){
-			//GameFiles Over!
-			System.out.println("Game over!");
+			//TODO: Add gameover menu
+			LoggerUtil.out.log(Level.WARNING, "Game over!");
 			Game.player.lives = 0;
 		}
 	}

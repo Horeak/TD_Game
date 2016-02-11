@@ -26,6 +26,8 @@ public class WorldRender extends AbstractWindowRender {
 
 	public static Tower towerSelected = null;
 
+	//TODO: Make blocks generate randomised textures instead of color
+
 	@Override
 	public void render( Graphics g2 ) {
 		g2.setClip(0,0,Game.gameWindowX,Game.gameWindowY);
@@ -50,9 +52,8 @@ public class WorldRender extends AbstractWindowRender {
 						td.add(Game.world.getTower(x, y));
 						continue;
 					}
-
-					//selectedTower.renderTower(g2, mouseX - (int) (renderX / 2), mouseY - (int) (renderY / 2), (int) renderX, (int) renderY);
 					((BaseNode)node).renderNode(g2, (int)(x * renderX), (int)(y * renderY), (int)renderX, (int)renderY);
+
 				}
 			}
 		}
@@ -90,7 +91,7 @@ public class WorldRender extends AbstractWindowRender {
 					g2.draw(new Circle(((tower.x) * renderX)  + (renderX / 2), ((tower.y) * (int)renderY)  + (renderY / 2), (Game.player.getTowerRange(tower) * ((renderX + renderY) / 2))));
 				}
 
-				boolean t = Game.world.validNode(null, mX, mY) || Game.world.getNode(mX, mY) != null && ((BaseNode)Game.world.getNode(mX, mY)).value > 0 && !((BaseNode) Game.world.getNode(mX, mY)).isPath && ((BaseNode) Game.world.getNode(mX, mY)).value != 100;
+				boolean t = Game.world.validNode(null, mX, mY) || Game.world.getNode(mX, mY) != null && ((BaseNode)Game.world.getNode(mX, mY)).getValue() > 0 && !((BaseNode) Game.world.getNode(mX, mY)).isPath && ((BaseNode) Game.world.getNode(mX, mY)).getValue() != 100;
 
 			if(GuiIngame.selectedTower != null){
 				GuiIngame.selectedTower.renderTower(g2, mouseX - (int) (renderX / 2), mouseY - (int) (renderY / 2), (int) renderX, (int) renderY);
@@ -119,7 +120,7 @@ public class WorldRender extends AbstractWindowRender {
 			towerSelected = null;
 		}
 
-		boolean t = Game.world.validNode(null, mX, mY) || Game.world.getNode(mX, mY) != null && Game.world.getNode(mX,mY) instanceof BaseNode && ((BaseNode)Game.world.getNode(mX,mY)).value > 0 && !((BaseNode) Game.world.getNode(mX, mY)).isPath && ((BaseNode) Game.world.getNode(mX, mY)).value != 100;
+		boolean t = Game.world.validNode(null, mX, mY) || Game.world.getNode(mX, mY) != null && Game.world.getNode(mX,mY) instanceof BaseNode && ((BaseNode)Game.world.getNode(mX,mY)).getValue() > 0 && !((BaseNode) Game.world.getNode(mX, mY)).isPath && ((BaseNode) Game.world.getNode(mX, mY)).getValue() != 100;
 
 		if(Game.world.getTower(mX,mY) != null){
 			if(towerSelected != null && towerSelected.x == mX && towerSelected.y == mY || towerSelected == null && (Game.world.getTower(mX, mY) == null)){

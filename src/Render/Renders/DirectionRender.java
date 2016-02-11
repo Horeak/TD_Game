@@ -54,7 +54,7 @@ public class DirectionRender extends AbstractWindowRender {
 	//TODO Only render between rounds
 	@Override
 	public boolean canRender() {
-		return Game.ingame && Game.world != null;
+		return Game.ingame && Game.world != null && Game.game.player.wave == 0 && Game.game.player.round == 0;
 	}
 
 	@Override

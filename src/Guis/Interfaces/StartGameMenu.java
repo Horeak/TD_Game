@@ -20,7 +20,9 @@ public class StartGameMenu extends BackgroundMenu {
 	public int selectedXsize = Game.default_x_size, selectedYsize = Game.default_y_size;
 
 	//TODO Loading StartGameMenu takes a long time on mac
-	public StartGameMenu(){
+
+	boolean added = false;
+	public void add(){
 		int width = ((Game.gameWindowX + 20) / 3);
 		guiObjects.add(new DifficultyButton(20, 80, width, 170, this, Difficulty.EASY));
 		guiObjects.add(new DifficultyButton(40 + width, 80, width, 170, this, Difficulty.NORMAL));
@@ -30,8 +32,6 @@ public class StartGameMenu extends BackgroundMenu {
 		guiObjects.add(new worldSizeButton(40 + width, 280, width, 150, this, EnumWorldSize.MEDIUM));
 		guiObjects.add(new worldSizeButton(60 + (width * 2), 280, width, 150, this, EnumWorldSize.BIG));
 
-		//TODO Add start button
-
 		guiObjects.add(new backButton(40 + width, 500, width, 40, this));
 		guiObjects.add(new startButton(40 + width, 450, width, 40, this));
 	}
@@ -39,6 +39,11 @@ public class StartGameMenu extends BackgroundMenu {
 	@Override
 	public void render( Graphics g2 ) {
 		super.render(g2);
+
+		if(!added){
+			add();
+			added = true;
+		}
 
 		g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(194, 194, 194, 100)));
 		g2.fill(new org.newdawn.slick.geom.Rectangle(0,0, Display.getWidth(), Display.getHeight()));
@@ -193,12 +198,12 @@ class worldSizeButton extends GuiObject{
 		g2.draw(rect);
 		g2.drawLine(rect.getX() - 10, rect.getY() - 1, rect.getX() - 10, rect.getMaxY() - 1);
 
-		g2.pushTransform();
-		g2.rotate(rect.getX() - 15, rect.getCenterY() - 1, -90);
+	//	g2.pushTransform();
+	//	g2.rotate(rect.getX() - 15, rect.getCenterY() - 1, -90);
 		FontHandler.resizeFont(g2, 12);
-		g2.drawString(worldSize.ySize + "", rect.getX() - 25, rect.getCenterY() - 10);
+		g2.drawString(worldSize.ySize + "", rect.getX() - 25 - ((worldSize.ySize + "").length() * 2), rect.getCenterY() - 10);
 		FontHandler.resetFont(g2);
-		g2.popTransform();
+	//	g2.popTransform();
 
 		g2.drawLine(rect.getX() - 1, rect.getMaxY() + 10, rect.getMaxX() - 1, rect.getMaxY() + 10);
 		FontHandler.resizeFont(g2, 12);

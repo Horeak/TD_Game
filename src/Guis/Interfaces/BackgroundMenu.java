@@ -6,6 +6,7 @@ import Map.World;
 import PathFinding.Utils.Node;
 import Towers.BaseNode;
 import Utils.Difficulty;
+import Utils.EnumWorldSize;
 import Utils.FontHandler;
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Graphics;
@@ -16,24 +17,24 @@ import java.awt.*;
 public class BackgroundMenu extends UIMenu {
 	public static World world;
 
-	public BackgroundMenu(){
-		if(world == null) {
-			world = new World(Game.default_x_size, Game.default_y_size, Difficulty.NORMAL);
-			world.initMap();
-		}
-	}
-
 	@Override
 	public void render( Graphics g2 ) {
-		for(int x = 0; x < world.xSize; x++){
-			for(int y = 0; y < world.ySize; y++){
-				Node node = world.getNode(x, y);
+		if(world == null) {
+			world = new World(EnumWorldSize.MEDIUM.xSize, EnumWorldSize.MEDIUM.ySize, Difficulty.NORMAL);
+			world.initMap();
+		}
 
-				float renderX = Game.xWindowSize / world.xSize;
-				float renderY = Game.yWindowSize / world.ySize;
+		if(world != null) {
+			for (int x = 0; x < world.xSize; x++) {
+				for (int y = 0; y < world.ySize; y++) {
+					Node node = world.getNode(x, y);
 
-				if(node != null && node instanceof BaseNode){
-					((BaseNode)node).renderNode(g2, (int)(x * renderX), (int)(y * renderY), (int)renderX, (int)renderY);
+					float renderX = Game.xWindowSize / world.xSize;
+					float renderY = Game.yWindowSize / world.ySize;
+
+					if (node != null && node instanceof BaseNode) {
+						((BaseNode) node).renderNode(g2, (int) (x * renderX), (int) (y * renderY), (int) renderX, (int) renderY);
+					}
 				}
 			}
 		}

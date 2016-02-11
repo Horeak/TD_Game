@@ -13,22 +13,18 @@ public abstract class Tower extends BaseNode implements Cloneable{
 		super(world, x,y);
 	}
 
-	public int delay;
+	private int delay;
 	private int killedByTurret = 0;
-	public int level = 1;
+	private int level = 1;
 
-	//Add getTarget
 	public abstract String getTurretName();
 
-	//TODO Change it where base Tower class has a level veriable so upgrade method is just for special cases
 	public abstract int getTurretMaxLevel();
 	public int getTurretLevel(){return level;}
 	public abstract boolean canUpgrade();
 	public void upgradeTurret(){level += 1;}
 
-	public abstract int getUpgradeCost();
 	public abstract int getTurretCost();
-	public abstract int getTurretSellAmount();
 
 	public int getEnemiesKilledByTurret(){return killedByTurret;}
 	public int getEnemiesInSight(){return world.getEntitiesNearTurret(this).size();}
@@ -47,6 +43,13 @@ public abstract class Tower extends BaseNode implements Cloneable{
 		}
 	}
 	public abstract int getAttackDelay();
+
+	public int getCurrentDelay(){
+		return delay;
+	}
+	public void setCurrentDelay(int i){
+		delay = i;
+	}
 
 
 	public abstract void renderTower( Graphics g2, int renderX, int renderY, int sizeX, int sizeY);

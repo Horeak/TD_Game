@@ -1,5 +1,6 @@
 package Towers;
 
+import Main.GameConfig;
 import Map.World;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
@@ -21,11 +22,6 @@ public class TestTower extends Tower {
 	}
 
 	@Override
-	public int getTurretSellAmount() {
-		return getTurretCost() + (getTurretCost() * level);
-	}
-
-	@Override
 	public String getTurretName() {
 		return "Test Tower";
 	}
@@ -37,29 +33,23 @@ public class TestTower extends Tower {
 
 
 	@Override
-	public int getUpgradeCost() {
-		return (int)((getTurretCost() * 1.75F) * (getTurretLevel() * 1.25F));
-	}
-
-	@Override
 	public boolean canUpgrade() {
 		return getTurretLevel() < (getTurretMaxLevel());
 	}
 
-
 	@Override
 	public int getTurretRange() {
-		return 5 + ((level-1));
+		return 5 + ((getTurretLevel()-1));
 	}
 
 	@Override
 	public int getTurretDamage() {
-		return 5 + (level * 5);
+		return 5 + (getTurretLevel() * 5);
 	}
 
 	@Override
 	public int getAttackDelay() {
-		return 10;
+		return GameConfig.debugMode ? 0 : 10;
 	}
 
 
