@@ -1,6 +1,7 @@
 package Towers;
 
 import Main.Game;
+import Main.GameConfig;
 import Map.World;
 import PathFinding.Utils.Node;
 import Utils.FontHandler;
@@ -19,47 +20,58 @@ public class BaseNode extends Node {
 		super(x,y);
 		this.world = world;
 
-		//TODO Tweak noise generation to make it look better
-		noise = 1F - ((float)Game.rand.nextInt(5) / 100F);
+		noise = 1F - ((float)Game.rand.nextInt(2) / 100F);
 	}
 
 	public void renderNode( Graphics g2, int x, int y, int sizeX, int sizeY){
-		if(this instanceof Tower){
-			((Tower)this).renderTower(g2, x, y, sizeX, sizeY);
-			return;
-		}
-
-		g2.setColor(getColor().scaleCopy(noise));
+		g2.setColor(GameConfig.renderDebug ? getColor() :  getColor().scaleCopy(noise));
 		g2.fill(new Rectangle(x, y, sizeX, sizeY));
 	}
 
 	public void setValue(float x){
-		value = (int)x;
+		value = x;
 	}
-
 	public float getValue(){
 		return value;
 	}
 
 	public Color getColor(){
-		if(getValue("openPathNode") != null && (boolean)getValue("openPathNode") == true && !isPath) return FontHandler.getColorToSlick(new java.awt.Color(195, 133, 39)).darker(0.15f);
+		if(GameConfig.renderDebug){
+			if(world.getStartNode() != null && x == world.getStartNode().x && y == world.getStartNode().y){
+				return Color.blue;
+			}
 
-//		if(GameFiles.world != null && GameFiles.world.getStartNode() != null && GameFiles.world.getStartNode().x == x && GameFiles.world.getStartNode().y == y) return Color.green.darker();
-//		if(GameFiles.world != null && GameFiles.world.getEndNode() != null && GameFiles.world.getEndNode().x == x && GameFiles.world.getEndNode().y == y) return Color.red.darker();
+			if(world.getEndNode() != null && x == world.getEndNode().x && y == world.getEndNode().y){
+				return Color.cyan;
+			}
+
+			if(isPath || (getValue("openPathNode") != null && (boolean)getValue("openPathNode") == true)){
+				return Color.yellow;
+			}else{
+				if(Game.world.validNode(null, x, y)){
+					return value > 0 ? Color.green.darker(value / 5) : Color.green.brighter(value / 5);
+				}else{
+					return value > 0 ? Color.red.darker(value / 8) : Color.red.brighter(value / 7);
+				}
+			}
+		}
+
+		if(getValue("openPathNode") != null && (boolean)getValue("openPathNode") == true && !isPath) return FontHandler.getColorToSlick(new java.awt.Color(195, 133, 39)).darker(0.15f);
 
 		if(isPath){
 			return FontHandler.getColorToSlick(new java.awt.Color(140, 96, 19));
 		}
 
-		if(value < -3) return Color.blue.darker(0.25f);
-		if(value < -2) return new Color(0.1F, 0.1F, 1F);
-		if(value < -1) return FontHandler.getColorToSlick(new java.awt.Color(238, 199, 108));
-		if(value < 0) return Color.green.darker(0.35f);
-		if(value < 1) return Color.green.darker();
-		if(value < 2) return Color.green.darker().darker(0.12F);
-		if(value < 3) return Color.gray;
-		if(value < 4) return Color.darkGray;
-		if(value < 5) return Color.darkGray.darker();
+		if(value <= -3) return new Color(0.1F, 0.1F, 1F).brighter(0.5F).brighter(value / 10);
+		if(value <= -2) return FontHandler.getColorToSlick(new java.awt.Color(255, 211, 134)).brighter(value / 10);
+
+		if(value > -2){
+			if(value > 3){
+				return Color.gray.brighter().darker(value / 8);
+			}
+
+			return Color.green.darker().darker(value / 10);
+		}
 
 		return Color.white;
 	}

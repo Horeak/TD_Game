@@ -25,6 +25,7 @@ public class Player {
 		return getCostFromTower(tower) + (int)((getCostFromTower(tower) * 0.5F) * (tower.getTurretLevel() - 1));
 	}
 
+	//TODO: Tower range seems too small on small map
 	public int getTowerRange( Tower tower ) {
 		float f = (((Game.world.xSize + Game.world.ySize) / 2));
 		float ff = ((Game.default_x_size + Game.default_y_size) / 2);
@@ -43,6 +44,8 @@ public class Player {
 
 	//TODO Make sure every round and wave has enemies
 	public ArrayList<GameEntity> getEntitiesForRound(int wave, int round){
+		if(Game.world == null || Game.world.getStartNode() == null || Game.world.getEndNode() == null)return  null;
+
 		ArrayList<GameEntity> ent = new ArrayList<>();
 
 		int rounds = ((round - 1) * waveMax) + (wave);
@@ -81,6 +84,7 @@ public class Player {
 		ArrayList<String> ents = new ArrayList<>();
 		int num = 0;
 
+		if(entList != null)
 		for(GameEntity ent : entList){
 			if(!ents.contains(ent.getEntityName())){
 				num += 1;

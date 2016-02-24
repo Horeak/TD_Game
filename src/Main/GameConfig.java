@@ -7,6 +7,7 @@ import org.newdawn.slick.Input;
 
 public class GameConfig extends Config {
 	public static boolean debugMode = false;
+	public static boolean renderDebug = false;
 
 	public static Keybinding[] keybindings = new Keybinding[]{
 	 new Keybinding("Pause/Resume game", "pause", Input.KEY_SPACE, "Speed control"),
@@ -14,8 +15,10 @@ public class GameConfig extends Config {
 	 new Keybinding("Speed 2x", "speed.2", Input.KEY_2, "Speed control"),
 	 new Keybinding("Speed 3x", "speed.3", Input.KEY_3, "Speed control"),
 
-	 new Keybinding("Spawn entity [DEBUG]", "spawnEnt", Input.KEY_ENTER, "Debug"),
-	 new Keybinding("Debug mode", "debugTogg", Input.KEY_D, "Debug")};
+	 new Keybinding("Menu", "menu", Input.KEY_ESCAPE, "Menu"),
+
+	 new Keybinding("Debug mode", "debugTogg", Input.KEY_D, "Debug"),
+	 new Keybinding("Debug render", "debugRend", Input.KEY_R, "Debug")};
 
 	public static ConfigOption[] configOptions = new ConfigOption[]{
 	};

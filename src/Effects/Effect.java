@@ -24,4 +24,33 @@ public abstract class Effect {
 				", timeLasted=" + timeLasted +
 				'}';
 	}
+
+
+	@Override
+	public boolean equals( Object o ) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof Effect)) {
+			return false;
+		}
+
+		Effect effect = (Effect) o;
+
+		if (time != effect.time) {
+			return false;
+		}
+		if (timeLasted != effect.timeLasted) {
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = time;
+		result = 31 * result + timeLasted;
+		return result;
+	}
 }

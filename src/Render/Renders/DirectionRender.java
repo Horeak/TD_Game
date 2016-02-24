@@ -3,6 +3,7 @@ package Render.Renders;
 import Main.Game;
 import PathFinding.Utils.Path;
 import Rendering.AbstractWindowRender;
+import Towers.BaseNode;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Circle;
@@ -13,8 +14,14 @@ public class DirectionRender extends AbstractWindowRender {
 
 	@Override
 	public void render(Graphics g2) {
-		if(Game.world == null || Game.world.enemyPath == null)
+		if(Game.world == null || Game.world.enemyPath == null){
 			return;
+		}
+
+		if(!((BaseNode)Game.world.getNode(Math.round(x), Math.round(y))).isPath){
+			x = 0;
+			y = 0;
+		}
 
 		if(Game.world != null && x == 0 && y == 0){
 			x = Game.world.getStartNode().x;
@@ -54,7 +61,7 @@ public class DirectionRender extends AbstractWindowRender {
 	//TODO Only render between rounds
 	@Override
 	public boolean canRender() {
-		return Game.ingame && Game.world != null && Game.game.player.wave == 0 && Game.game.player.round == 0;
+		return Game.ingame && Game.world != null && (Game.game.player.wave == 0 || Game.gameSpeed == 0);
 	}
 
 	@Override

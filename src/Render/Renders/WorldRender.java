@@ -41,25 +41,27 @@ public class WorldRender extends AbstractWindowRender {
 		mX = (int) (mouseX / renderX);
 		mY = (int) (mouseY / renderY);
 
-		ArrayList<Tower> td = new ArrayList<>();
 
 		for(int x = 0; x < Game.world.xSize; x++){
 			for(int y = 0; y < Game.world.ySize; y++){
 				Node node = Game.world.getNode(x, y);
 
 				if(node != null && node instanceof BaseNode){
-					if(Game.world.getTower(x, y) != null){
-						td.add(Game.world.getTower(x, y));
-						continue;
-					}
 					((BaseNode)node).renderNode(g2, (int)(x * renderX), (int)(y * renderY), (int)renderX, (int)renderY);
 
 				}
 			}
 		}
 
-		for(Tower tdd : td){
-			tdd.renderNode(g2, (int)(tdd.x * renderX), (int)(tdd.y * renderY), (int)renderX, (int)renderY);
+		for(int x = 0; x < Game.world.xSize; x++){
+			for(int y = 0; y < Game.world.ySize; y++){
+				Tower node = Game.world.getTower(x, y);
+
+				if(node != null && node instanceof Tower){
+					((Tower)node).renderTower(g2, (int)(x * renderX), (int)(y * renderY), (int)renderX, (int)renderY);
+
+				}
+			}
 		}
 
 		if(Game.ingame){

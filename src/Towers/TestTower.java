@@ -62,6 +62,7 @@ public class TestTower extends Tower {
 		g2.setColor(Color.black);
 		g2.draw(rectangle);
 
+		//TODO Circle is not center when it is scaled down!
 		Circle circle = new Circle(rectangle.getCenterX(), rectangle.getCenterY(), ((sizeX + sizeY) / 6));
 
 		g2.setColor(Color.orange);

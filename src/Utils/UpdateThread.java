@@ -9,7 +9,7 @@ public class UpdateThread extends Thread {
 
 		while(this.isAlive()){
 			try {
-				if (Game.ingame && Game.world != null) {
+				if (Game.ingame && Game.world != null && Game.player.lives > 0) {
 					if(Game.gameSpeed != 0) {
 						Game.world.updateGame();
 					}

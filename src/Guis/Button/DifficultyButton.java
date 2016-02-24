@@ -10,6 +10,7 @@ import org.newdawn.slick.geom.Rectangle;
 
 import java.awt.*;
 
+
 public class DifficultyButton extends GuiObject {
 
 	int i = 0;

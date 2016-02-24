@@ -18,17 +18,12 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Game extends BaseGame {
-	//TODO Add entity "effects" (like minecraft potion effects) to allow thing like freeze and poison. (have it where it updates every second or so where it has acces to the entity instance and can change gameSpeed, damage...)
-	//TODO Loading new guis are taking too long! (Specificly the StartGameMenu and GuiIngame)
-
-	//TODO: Improve rendering times. (It seems to take a long time to change what is rendering and to start rendering)
-	//TODO Perhaps make it where the path is not a part of the node storeage and instead draw the path by dynamicly getting it each tick (maybe run it on a seperate thread) so that the path can change if it forexample gets blocked
-
 	public static int gameWindowX = 500;
 	public static int gameWindowY = 500;
 	public static int xWindowSize = gameWindowX + 100;
@@ -54,6 +49,8 @@ public class Game extends BaseGame {
 
 
 	//TODO Game starts lagging alot after being run for a long time (Tested until 1h and 30min)(Pherhaps looking at some sort of garbage collection will help?)
+	//TODO Perhaps make it where the path is not a part of the node storeage and instead draw the path by dynamicly getting it each tick (maybe run it on a seperate thread) so that the path can change if it forexample gets blocked
+	//TODO Try to improve performance. (CHanging array lists seems to have improved it a bit)
 
 	@Override
 	public void initGame(GameContainer container) throws SlickException {
@@ -91,11 +88,17 @@ public class Game extends BaseGame {
 			}
 		});
 
-		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("spawnEnt")) {
+		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("menu")) {
 			@Override
 			public void performAction() {
-				if(ingame)
-				Game.world.entities.add(new BossEnemy(Game.world, Game.world.getStartNode().x, Game.world.getStartNode().y));
+				if(ingame) {
+					ingame = false;
+
+					world = null;
+					player = new Player();
+
+					setCurrentMenu(new MainMenu());
+				}
 			}
 		});
 
@@ -103,6 +106,13 @@ public class Game extends BaseGame {
 			@Override
 			public void performAction() {
 				GameConfig.debugMode ^= true;
+			}
+		});
+
+		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("debugRend")) {
+			@Override
+			public void performAction() {
+				GameConfig.renderDebug ^= true;
 			}
 		});
 	}
@@ -166,4 +176,5 @@ public class Game extends BaseGame {
 			Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
+
 }

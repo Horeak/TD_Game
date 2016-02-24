@@ -7,7 +7,9 @@ import Interface.GuiObject;
 import Interface.UIMenu;
 import Main.Game;
 import Main.GameConfig;
+import PathFinding.Utils.Node;
 import Render.Renders.WorldRender;
+import Towers.BaseNode;
 import Towers.Tower;
 import Utils.FontHandler;
 import Utils.Registrations;
@@ -20,6 +22,7 @@ import org.newdawn.slick.util.FontUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class GuiIngame extends Gui {
@@ -33,6 +36,10 @@ public class GuiIngame extends Gui {
 	@Override
 	public void render( Graphics g2 ) {
 		guiObjects.clear();
+		guiObjects.trimToSize();
+		guiObjects = null;
+
+		guiObjects = new ArrayList<>();
 
 		guiObjects.add(new upgradeButton(250, Display.getHeight() - 25, 200, 20, this));
 		guiObjects.add(new sellButton(250, Display.getHeight() - 50, 200, 20, this));
@@ -140,9 +147,16 @@ public class GuiIngame extends Gui {
 			renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{turret.getTurretName(),"Level: " + turret.getTurretLevel() + "/" + turret.getTurretMaxLevel(), "Damage: " + Game.player.getTowerDamage(turret), "Range: " + Game.player.getTowerRange(turret), "", "Enemies killed: " + turret.getEnemiesKilledByTurret(), GameConfig.debugMode ? "Enemies in sight: " + turret.getEnemiesInSight() : null, GameConfig.debugMode ? "Attack time: " + turret.getCurrentDelay()/100 + "/" + turret.getAttackDelay() : null});
 		}
 
+		if(GameConfig.renderDebug)
+		if(Game.world.getNode(WorldRender.mX, WorldRender.mY) != null){
+			BaseNode nd = (BaseNode)Game.world.getNode(WorldRender.mX, WorldRender.mY);
+			renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{"Value: " + nd.getValue()});
+		}
+
+
 
 		if(Game.world.entities != null)
-		for(Entity ent : new ArrayList<>(Game.world.entities)){
+		for(Entity ent : Collections.synchronizedList(Game.world.entities)){
 			if(ent == null) continue;
 
 			if(((GameEntity)ent).isMouseOver(WorldRender.mouseX, WorldRender.mouseY, WorldRender.renderX, WorldRender.renderY)){
@@ -206,7 +220,7 @@ public class GuiIngame extends Gui {
 		g2.draw(rectangle);
 	}
 
-	float offSet = 0, offSetMax = 0, change = 1F;
+	float offSet = 0, offSetMax = 0, change = 0.5F;
 	boolean reverse = false;
 
 	@Override
@@ -218,6 +232,7 @@ public class GuiIngame extends Gui {
 		HashMap<String, Integer> ents = new HashMap<>();
 		ArrayList<GameEntity> entts = new ArrayList<>();
 
+		if(entss != null && entss.size() > 0)
 		for (GameEntity ent : new ArrayList<GameEntity>(entss)) {
 			if(ents.containsKey(ent.getEntityName())){
 				ents.put(ent.getEntityName(), ents.get(ent.getEntityName()) + 1);
@@ -406,7 +421,7 @@ class sellButton extends GuiObject{
 		int mouseY = container.getInput().getMouseY();
 
 
-		g2.setColor(WorldRender.towerSelected != null ? isMouseOver() ? Color.lightGray : Color.gray : Color.gray);
+		g2.setColor(WorldRender.towerSelected != null ? isMouseOver() ? Color.lightGray : Color.gray : Color.darkGray);
 		g2.fill(tangle);
 
 		g2.setColor(Color.red.darker());

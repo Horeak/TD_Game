@@ -4,14 +4,18 @@ import Entities.GameEntity;
 import EntityFiles.Entity;
 import Main.Game;
 import Map.World;
+import PathFinding.Utils.Node;
 import org.newdawn.slick.Graphics;
 
 import java.util.ConcurrentModificationException;
 
-public abstract class Tower extends BaseNode implements Cloneable{
+public abstract class Tower extends Node implements Cloneable{
+	public World world;
 	public Tower( World world, int x, int y){
-		super(world, x,y);
+		super(x,y);
+		this.world = world;
 	}
+
 
 	private int delay;
 	private int killedByTurret = 0;
@@ -66,9 +70,7 @@ public abstract class Tower extends BaseNode implements Cloneable{
 				}
 			}
 		}catch (Exception e){
-			if(!(e instanceof ConcurrentModificationException)){
-				e.printStackTrace();
-			}
+			e.printStackTrace();
 		}
 
 		return ent;
