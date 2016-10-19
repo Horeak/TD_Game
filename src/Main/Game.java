@@ -1,29 +1,28 @@
 package Main;
 
-import Entities.BossEnemy;
 import Entities.GameEntity;
 import EntityFiles.Entity;
 import GameFiles.BaseGame;
 import Guis.Interfaces.MainMenu;
+import Main.Files.Player;
 import Map.World;
 import Render.Renders.DirectionRender;
 import Render.Renders.WorldRender;
 import Rendering.AbstractWindowRender;
 import Settings.Config;
-import Settings.Values.KeybindingAction;
-import Utils.Player;
-import Utils.TimeTaker;
+import Utilities.LoggerUtil;
+import Utilities.TimeTaker;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.InputListener;
 import org.newdawn.slick.SlickException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Game extends BaseGame {
+public class Game extends BaseGame implements InputListener {
 	public static int gameWindowX = 500;
 	public static int gameWindowY = 500;
 	public static int xWindowSize = gameWindowX + 100;
@@ -47,6 +46,7 @@ public class Game extends BaseGame {
 		super(title, xSize, ySize, fullscreen);
 	}
 
+	//TODO Game is too easy. Once you get to a certain point which you get to fast it is basicly impossible to lose
 
 	//TODO Game starts lagging alot after being run for a long time (Tested until 1h and 30min)(Pherhaps looking at some sort of garbage collection will help?)
 	//TODO Perhaps make it where the path is not a part of the node storeage and instead draw the path by dynamicly getting it each tick (maybe run it on a seperate thread) so that the path can change if it forexample gets blocked
@@ -54,70 +54,13 @@ public class Game extends BaseGame {
 
 	@Override
 	public void initGame(GameContainer container) throws SlickException {
+		LoggerUtil.activate("TD_Game");
 		TimeTaker.startTimeTaker("timeStarted");
 		setCurrentMenu(new MainMenu());
 	}
+	
 
-	public void addKeybindings(){
-		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("pause")) {
-			@Override
-			public void performAction() {
-				if(ingame)
-				Game.gameSpeed = 0;
-			}
-		});
-		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("speed.1")) {
-			@Override
-			public void performAction() {
-				if(ingame)
-				Game.gameSpeed = 1;
-			}
-		});
-		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("speed.2")) {
-			@Override
-			public void performAction() {
-				if(ingame)
-				Game.gameSpeed = 2;
-			}
-		});
-		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("speed.3")) {
-			@Override
-			public void performAction() {
-				if(ingame)
-				Game.gameSpeed = 3;
-			}
-		});
-
-		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("menu")) {
-			@Override
-			public void performAction() {
-				if(ingame) {
-					ingame = false;
-
-					world = null;
-					player = new Player();
-
-					setCurrentMenu(new MainMenu());
-				}
-			}
-		});
-
-		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("debugTogg")) {
-			@Override
-			public void performAction() {
-				GameConfig.debugMode ^= true;
-			}
-		});
-
-		keybindingActions.add(new KeybindingAction(getConfig().getKeybindFromID("debugRend")) {
-			@Override
-			public void performAction() {
-				GameConfig.renderDebug ^= true;
-			}
-		});
-	}
-
-	GameConfig cf = new GameConfig();
+	public static GameConfig cf = new GameConfig();
 	@Override
 	public Config getConfig() {
 		return cf;
@@ -165,6 +108,7 @@ public class Game extends BaseGame {
 
 	}
 
+
 	public static void main( String[] args ) {
 		try {
 			game.gameContainer.setAlwaysRender(true);
@@ -177,4 +121,20 @@ public class Game extends BaseGame {
 		}
 	}
 
+
+	public static String IntegerToRoman(int n){
+		String roman="";
+		int repeat;
+		int magnitude[]={1000,900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+		String symbol[]={"M","CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+		repeat=n/1;
+		for(int x=0; n>0; x++){
+			repeat=n/magnitude[x];
+			for(int i=1; i<=repeat; i++){
+				roman=roman + symbol[x];
+			}
+			n=n%magnitude[x];
+		}
+		return roman;
+	}
 }

@@ -5,15 +5,14 @@ import EntityFiles.Entity;
 import Interface.Gui;
 import Interface.GuiObject;
 import Interface.UIMenu;
+import Main.Files.BaseNode;
+import Main.Files.Registrations;
+import Main.Files.Tower;
 import Main.Game;
 import Main.GameConfig;
-import PathFinding.Utils.Node;
 import Render.Renders.WorldRender;
-import Towers.BaseNode;
-import Towers.Tower;
-import Utils.FontHandler;
-import Utils.Registrations;
-import Utils.TimeTaker;
+import Utilities.FontHandler;
+import Utilities.TimeTaker;
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
@@ -24,6 +23,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GuiIngame extends Gui {
 
@@ -35,11 +35,11 @@ public class GuiIngame extends Gui {
 	public boolean overrideKeybindigs(){return false;}
 	@Override
 	public void render( Graphics g2 ) {
+		for(GuiObject ob : guiObjects) ob = null;
+		
 		guiObjects.clear();
-		guiObjects.trimToSize();
 		guiObjects = null;
-
-		guiObjects = new ArrayList<>();
+		guiObjects = new CopyOnWriteArrayList<>();
 
 		guiObjects.add(new upgradeButton(250, Display.getHeight() - 25, 200, 20, this));
 		guiObjects.add(new sellButton(250, Display.getHeight() - 50, 200, 20, this));
@@ -50,8 +50,8 @@ public class GuiIngame extends Gui {
 		//TODO Add scrolling or "pages"
 		int i = 0;
 		for(Tower t : Registrations.towers){
-			guiObjects.add(new shopButton(Display.getWidth() - 95, 5 + (i * 42), 90, 42, this, t));
-			i += i;
+			guiObjects.add(new shopButton(Display.getWidth() - 95, 5 + (i * 52), 90, 42, this, t));
+			i += 1;
 		}
 
 		Rectangle tangle = new Rectangle(Display.getWidth() - 100, 0, 100, Display.getHeight());
@@ -103,12 +103,12 @@ public class GuiIngame extends Gui {
 
 		Tower tower = WorldRender.towerSelected;
 
-		String towerName = tower != null ? tower.getTurretName() : "N/A";
+		String towerName = tower != null ? tower.getTowerName() : "N/A";
 
 		String towerDamage = tower != null ? Game.player.getTowerDamage(tower) + "" : "N/A";
 		String towerRange = tower != null ? Game.player.getTowerRange(tower) + "" : "N/A";
 
-		String towerLefel = tower != null ? tower.getTurretLevel() + "/" + tower.getTurretMaxLevel() : "N/A";
+		String towerLefel = tower != null ? tower.getTowerLevel() + "/" + tower.GetTowerMaxLevel() : "N/A";
 
 		g2.setColor(Color.black);
 		FontHandler.resizeFont(g2, 16);
@@ -144,7 +144,7 @@ public class GuiIngame extends Gui {
 
 		if(Game.world.getTower(WorldRender.mX, WorldRender.mY) != null){
 			Tower turret = Game.world.getTower(WorldRender.mX, WorldRender.mY);
-			renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{turret.getTurretName(),"Level: " + turret.getTurretLevel() + "/" + turret.getTurretMaxLevel(), "Damage: " + Game.player.getTowerDamage(turret), "Range: " + Game.player.getTowerRange(turret), "", "Enemies killed: " + turret.getEnemiesKilledByTurret(), GameConfig.debugMode ? "Enemies in sight: " + turret.getEnemiesInSight() : null, GameConfig.debugMode ? "Attack time: " + turret.getCurrentDelay()/100 + "/" + turret.getAttackDelay() : null});
+			renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{turret.getTowerName(),"Level: " + turret.getTowerLevel() + "/" + turret.GetTowerMaxLevel(), "Damage: " + Game.player.getTowerDamage(turret), "Range: " + Game.player.getTowerRange(turret), "", "Enemies killed: " + turret.getEnemiesKilledByTower(), GameConfig.debugMode ? "Enemies in sight: " + turret.getEnemiesInSight() : null, GameConfig.debugMode ? "Attack time: " + turret.getCurrentDelay()/100 + "/" + turret.getAttackDelay() : null});
 		}
 
 		if(GameConfig.renderDebug)
@@ -160,7 +160,7 @@ public class GuiIngame extends Gui {
 			if(ent == null) continue;
 
 			if(((GameEntity)ent).isMouseOver(WorldRender.mouseX, WorldRender.mouseY, WorldRender.renderX, WorldRender.renderY)){
-				renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{ent.getEntityName(), "Health: " + ent.getEntityHealth() + "/" + ent.getEntityMaxHealth(), GameConfig.debugMode ? " " : null, GameConfig.debugMode ? "Money Dropped: " + ((GameEntity) ent).getMoneyDropped() : null, GameConfig.debugMode ? "Speed: " + ((GameEntity) ent).getMovementSpeed() : null, GameConfig.debugMode ? "Effects: " + ((GameEntity) ent).activeEffects.values().toString() : null});
+				renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{ent.getEntityName(), "Health: " + ent.getEntityHealth() + "/" + ent.getEntityMaxHealth(), GameConfig.debugMode ? "Effects: " + ((GameEntity) ent).activeEffects.values().toString() : "", GameConfig.debugMode ? " " : null, GameConfig.debugMode ? "Money Dropped: " + ((GameEntity) ent).getMoneyDropped() : null, GameConfig.debugMode ? "Speed: " + ((GameEntity) ent).getMovementSpeed() : null});
 			}
 		}
 
@@ -174,7 +174,13 @@ public class GuiIngame extends Gui {
 		g2.setColor(Color.darkGray);
 		FontHandler.resizeFont(g2, 10);
 		FontHandler.changeFontStyle(g2, Font.BOLD);
-		g2.drawString("Current wave:      " + (Game.world.delayNextRound != 0 ? "[" + ((float)((Game.world.timeToNextRound - Game.world.delayNextRound) / 1000F)) + "s until next wave]" : ""), 2, Display.getHeight() - 148);
+
+		if(Game.world.startDelay < Game.world.delayToStart){
+			g2.drawString("Current wave:      " + ("[" + ((float)((Game.world.startDelay - Game.world.delayToStart) / 1000F)) + "s until first wave]"), 2, Display.getHeight() - 148);
+		}else {
+			g2.drawString("Current wave:      " + (Game.world.delayNextRound != 0 ? "[" + ((float) ((Game.world.timeToNextRound - Game.world.delayNextRound) / 1000F)) + "s until next wave]" : ""), 2, Display.getHeight() - 148);
+		}
+
 		FontHandler.resetFont(g2);
 
 		//TODO Can use Game.player.getEntitiesForRound() to get original list to compare!
@@ -298,10 +304,14 @@ class shopButton extends GuiObject{
 
 	@Override
 	public void onClicked( int button, int x, int y, UIMenu menu ) {
-		if(b) {
-			GuiIngame.selectedTower = null;
+		if(Game.player.canAffordTower(tower)) {
+			if (b) {
+				GuiIngame.selectedTower = null;
+			} else {
+				GuiIngame.selectedTower = tower;
+			}
 		}else{
-			GuiIngame.selectedTower = tower;
+			GuiIngame.selectedTower = null;
 		}
 	}
 
@@ -310,11 +320,9 @@ class shopButton extends GuiObject{
 		b = GuiIngame.selectedTower != null;
 
 		Color c = isMouseOver() ? GuiIngame.selectedTower == tower ? Color.blue : Game.player.canAffordTower(tower) ? Color.gray : Color.gray.darker() : GuiIngame.selectedTower == tower ? Color.blue.darker().darker() : Game.player.canAffordTower(tower) ? Color.darkGray : Color.darkGray.darker();
-		int mouseX = container.getInput().getMouseX();
-		int mouseY = container.getInput().getMouseY();
 
 		if(isMouseOver()){
-			String[] tt = new String[]{ tower.getTurretName(), "Range: " + Game.player.getTowerRange(tower), "Damage: " + Game.player.getTowerDamage(tower), "Cost: " + Game.player.getCostFromTower(tower)};
+			String[] tt = new String[]{ tower.getTowerName(), "Range: " + Game.player.getTowerRange(tower), "Damage: " + Game.player.getTowerDamage(tower), "Cost: " + Game.player.getCostFromTower(tower)};
 			((Gui)menu).renderTooltip(x, y + height, width, height, tt);
 		}
 
@@ -355,9 +363,13 @@ class upgradeButton extends GuiObject{
 	public void onClicked( int button, int x, int y, UIMenu menu ) {
 		if(WorldRender.towerSelected != null)
 		if(WorldRender.towerSelected.canUpgrade()){
-			if(Game.player.money >= Game.player.getUpgradeCostFromTower(WorldRender.towerSelected)){
-				Game.player.money -= Game.player.getUpgradeCostFromTower(WorldRender.towerSelected);
-				WorldRender.towerSelected.upgradeTurret();
+			if(Game.player.money >= Game.player.getUpgradeCostFromTower(WorldRender.towerSelected) || GameConfig.debugMode){
+
+				if(!GameConfig.debugMode) {
+					Game.player.money -= Game.player.getUpgradeCostFromTower(WorldRender.towerSelected);
+				}
+
+				WorldRender.towerSelected.upgradeTower();
 			}
 		}
 	}
@@ -366,8 +378,8 @@ class upgradeButton extends GuiObject{
 	public void renderObject( Graphics g2, UIMenu menu ) {
 		Rectangle tangle = new Rectangle(x, y, width, height);
 
-		int mouseX = container.getInput().getMouseX();
-		int mouseY = container.getInput().getMouseY();
+		int mouseX = Game.game.gameContainer.getInput().getMouseX();
+		int mouseY = Game.game.gameContainer.getInput().getMouseY();
 
 		boolean hasUpgrade = WorldRender.towerSelected != null && WorldRender.towerSelected.canUpgrade();
 		boolean canAfford = hasUpgrade && Game.player.money >= Game.player.getUpgradeCostFromTower(WorldRender.towerSelected);
@@ -417,8 +429,8 @@ class sellButton extends GuiObject{
 	public void renderObject( Graphics g2, UIMenu menu ) {
 		Rectangle tangle = new Rectangle(x, y, width, height);
 
-		int mouseX = container.getInput().getMouseX();
-		int mouseY = container.getInput().getMouseY();
+		int mouseX = Game.game.gameContainer.getInput().getMouseX();
+		int mouseY = Game.game.gameContainer.getInput().getMouseY();
 
 
 		g2.setColor(WorldRender.towerSelected != null ? isMouseOver() ? Color.lightGray : Color.gray : Color.darkGray);

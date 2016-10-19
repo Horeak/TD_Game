@@ -2,9 +2,9 @@ package Guis.Button;
 
 import Interface.GuiObject;
 import Interface.UIMenu;
+import Main.Files.Difficulty;
 import Main.Game;
-import Utils.Difficulty;
-import Utils.FontHandler;
+import Utilities.FontHandler;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
 

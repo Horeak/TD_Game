@@ -4,32 +4,39 @@ import Main.Game;
 import World.WorldBase;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Circle;
 
-public class HardEnemy extends GameEntity {
-	public HardEnemy(WorldBase world, float x, float y) {
+public class HeavyMob extends GameEntity {
+	public HeavyMob( WorldBase world, float x, float y) {
 		super(world, x, y);
 	}
 
 	@Override
 	public int getMoneyDropped() {
-		return 20;
+		return 50;
 	}
+
+	public float movementSpeed = 5;
 
 	@Override
 	public float getMovementSpeed() {
-		return 10;
+		return movementSpeed;
+	}
+
+	@Override
+	public void setMovementSpeed(float f) {
+		movementSpeed = f;
 	}
 
 	@Override
 	public void renderEntity(Graphics g2, float x, float y, float blockSizeX, float blockSizeY) {
-		g2.setColor(Color.red);
+		g2.setColor(Color.blue);
 
-		Rectangle rect = new Rectangle(x + (blockSizeX * 0.25F), y + (blockSizeY * 0.25F), blockSizeX * 0.5F, blockSizeY * 0.5F);
-		g2.fill(rect);
+		Circle c = new Circle(x + (blockSizeX * 0.5F), y + (blockSizeY * 0.5F), ((blockSizeX * 0.5F) + (blockSizeY * 0.5F)) / 2);
+		g2.fill(c);
 
 		g2.setColor(Color.black);
-		g2.draw(rect);
+		g2.draw(c);
 	}
 
 	@Override
@@ -39,11 +46,11 @@ public class HardEnemy extends GameEntity {
 
 	@Override
 	public int getEntityMaxHealth() {
-		return Game.game.player.getHealthScaled(25);
+		return Game.game.player.getHealthScaled(100);
 	}
 
 	@Override
 	public String getEntityName() {
-		return "Hard Enemy";
+		return "Heavy Mob";
 	}
 }

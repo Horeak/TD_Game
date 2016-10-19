@@ -1,4 +1,5 @@
-package Utils;
+package Main.Files;
+
 
 public enum Difficulty {
 

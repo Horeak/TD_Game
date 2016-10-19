@@ -1,14 +1,13 @@
 package Guis.Interfaces;
 
-
 import Guis.Button.DifficultyButton;
 import Interface.GuiObject;
 import Interface.UIMenu;
+import Main.Files.Difficulty;
+import Main.Files.EnumWorldSize;
 import Main.Game;
 import Map.World;
-import Utils.Difficulty;
-import Utils.EnumWorldSize;
-import Utils.FontHandler;
+import Utilities.FontHandler;
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;

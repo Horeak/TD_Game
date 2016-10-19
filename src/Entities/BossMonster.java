@@ -6,8 +6,8 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Ellipse;
 
-public class BossEnemy extends GameEntity {
-	public BossEnemy(WorldBase world, float x, float y) {
+public class BossMonster extends GameEntity {
+	public BossMonster( WorldBase world, float x, float y) {
 		super(world, x, y);
 	}
 
@@ -16,9 +16,16 @@ public class BossEnemy extends GameEntity {
 		return 200;
 	}
 
+	public float movementSpeed = 3;
+
 	@Override
 	public float getMovementSpeed() {
-		return 3;
+		return movementSpeed;
+	}
+
+	@Override
+	public void setMovementSpeed(float f) {
+		movementSpeed = f;
 	}
 
 	@Override
@@ -49,6 +56,6 @@ public class BossEnemy extends GameEntity {
 
 	@Override
 	public String getEntityName() {
-		return "Boss Enemy";
+		return "Boss Monster";
 	}
 }

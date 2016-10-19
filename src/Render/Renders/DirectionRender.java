@@ -1,9 +1,9 @@
 package Render.Renders;
 
+import Main.Files.BaseNode;
 import Main.Game;
 import PathFinding.Utils.Path;
 import Rendering.AbstractWindowRender;
-import Towers.BaseNode;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Circle;
@@ -18,7 +18,7 @@ public class DirectionRender extends AbstractWindowRender {
 			return;
 		}
 
-		if(!((BaseNode)Game.world.getNode(Math.round(x), Math.round(y))).isPath){
+		if(((BaseNode)Game.world.getNode(Math.round(x), Math.round(y))) != null && !((BaseNode)Game.world.getNode(Math.round(x), Math.round(y))).isPath){
 			x = 0;
 			y = 0;
 		}

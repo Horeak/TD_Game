@@ -1,10 +1,10 @@
-package Towers;
+package Main.Files;
 
 import Main.Game;
 import Main.GameConfig;
 import Map.World;
 import PathFinding.Utils.Node;
-import Utils.FontHandler;
+import Utilities.FontHandler;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
@@ -14,13 +14,12 @@ public class BaseNode extends Node {
 	public boolean isPath = false;
 	private float value;
 
-	private float noise;
+	private float noise = 1F;
 
 	public BaseNode( World world, int x, int y){
 		super(x,y);
 		this.world = world;
-
-		noise = 1F - ((float)Game.rand.nextInt(2) / 100F);
+		noise -= ((float)Game.rand.nextInt(2) / 100F);
 	}
 
 	public void renderNode( Graphics g2, int x, int y, int sizeX, int sizeY){

@@ -1,6 +1,10 @@
 package Map;
 
 import Entities.GameEntity;
+import Main.Files.BaseNode;
+import Main.Files.Difficulty;
+import Main.Files.Tower;
+import Main.Files.UpdateThread;
 import Main.Game;
 import NoiseGenerator.PerlinNoiseGenerator;
 import PathFinding.Interfaces.MovingObject;
@@ -8,25 +12,23 @@ import PathFinding.Interfaces.NodeMap;
 import PathFinding.NodeMapPathFinder;
 import PathFinding.Utils.Node;
 import PathFinding.Utils.Path;
-import Towers.BaseNode;
-import Towers.Tower;
-import Utils.Difficulty;
-import Utils.LoggerUtil;
-import Utils.TimeTaker;
-import Utils.UpdateThread;
+import Projectiles.Projectile;
+import Utilities.LoggerUtil;
+import Utilities.TimeTaker;
 import World.WorldBase;
 import com.sun.javafx.geom.Vec2d;
-import org.newdawn.slick.geom.Circle;
+import org.newdawn.slick.geom.Vector2f;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
 public class World  extends WorldBase implements NodeMap{
-	public ArrayList<GameEntity> entities = new ArrayList<>();
+	public CopyOnWriteArrayList<GameEntity> entities = new CopyOnWriteArrayList<>();
 
-	public synchronized ArrayList<GameEntity> getEntities(){
+	public CopyOnWriteArrayList<GameEntity> getEntities(){
 		return  entities;
 	}
 
@@ -53,6 +55,8 @@ public class World  extends WorldBase implements NodeMap{
 		this.difficulty = difficulty;
 
 		updateThread.start();
+
+		Game.player.money = (int)(difficulty.costModifer * 100);
 	}
 
 	public ArrayList<GameEntity> getEntitiesNearTurret( Tower tower ){
@@ -60,10 +64,8 @@ public class World  extends WorldBase implements NodeMap{
 
 		try {
 			for (GameEntity ent : Collections.synchronizedList(entities)) {
-				Circle cir = new Circle(tower.x, tower.y, Game.player.getTowerRange(tower));
-
-				if(cir != null && ent != null)
-				if (cir.contains(ent.x, ent.y)) {
+				if(ent != null)
+				if (new Vector2f(ent.x, ent.y).distance(new Vector2f(tower.x, tower.y)) <= Game.player.getTowerRange(tower)) {
 					ents.add(ent);
 				}
 			}
@@ -326,7 +328,7 @@ public class World  extends WorldBase implements NodeMap{
 
 	@Override
 	public boolean validNode( MovingObject movingObject, int x, int y ) {
-		return getNode(x, y) instanceof BaseNode && !((BaseNode)getNode(x,y)).isPath && ((BaseNode)getNode(x,y)).getValue() <= 2.4F && ((BaseNode)getNode(x,y)).getValue() >= -2 && getTower(x, y) == null;
+		return getNode(x, y) instanceof BaseNode && !((BaseNode)getNode(x,y)).isPath && ((BaseNode)getNode(x,y)).getValue() <= 2.4F && ((BaseNode)getNode(x,y)).getValue() >= -2 && getTower(x, y) == null || getNode(x, y) instanceof BaseNode && getNode(x,y).getValue("openPathNode") != null && getNode(x,y).getValue("openPathNode").equals(true) && !((BaseNode) getNode(x, y)).isPath;
 	}
 
 	@Override
@@ -338,7 +340,7 @@ public class World  extends WorldBase implements NodeMap{
 	//delayNextRound=Delay between changing waves/rounds
 	//delaySpawn=Delay between each mob being spawned from the current wave spawn
 	public int delayNextRound, delaySpawn = 0, startDelay;
-	public final int timeToSpawn = 200, timeToNextRound = 1500, delayToStart = 2000;
+	public final int timeToSpawn = 500, timeToNextRound = 1500, delayToStart = 2000;
 	public ArrayList<GameEntity> mobs;
 
 	//TODO Longer deleay before new round then before new wave. And a way to detect when waiting for new wave(used for the DirectionRender)
@@ -352,6 +354,7 @@ public class World  extends WorldBase implements NodeMap{
 				Game.player.waveMax = 10;
 
 				mobs = Game.player.getEntitiesForRound(Game.player.wave, Game.player.round);
+				resetTowerTimers();
 			}else{
 				startDelay += Game.gameSpeed;
 			}
@@ -392,6 +395,7 @@ public class World  extends WorldBase implements NodeMap{
 					}
 
 					mobs = Game.player.getEntitiesForRound(Game.player.wave, Game.player.round);
+					resetTowerTimers();
 				} else {
 					delayNextRound += Game.gameSpeed;
 				}
@@ -405,12 +409,33 @@ public class World  extends WorldBase implements NodeMap{
 		for(Tower[] t : towers){
 			for(Tower tower : t){
 				if(tower == null) continue;
+				
+				GameEntity entTarget = tower.getTarget();
 
 				//TODO Improve towerAttackDelay (Does it scale properly with gameSpeed?)
 				if(tower.getCurrentDelay() >= (tower.getAttackDelay() * (100))){
-					if(tower.getTarget() != null) {
-						tower.setCurrentDelay(0);
-						tower.attackEntity(tower.getTarget());
+					if(tower.attackAll()){
+
+						boolean tttt = false;
+
+						for(GameEntity ent : getEntitiesNearTurret(tower)){
+							if (tower.attackEntity(ent)) {
+								tttt = true;
+							}
+						}
+
+						if(tttt){
+							tower.setCurrentDelay(0);
+						}
+
+					}else {
+						if (entTarget != null) {
+							if(entTarget != null && tower.canAttackEntity(entTarget)) {
+								Projectile projectile = new Projectile(this, tower.x, tower.y, entTarget, tower);
+								entities.add(projectile);
+								tower.setCurrentDelay(0);
+							}
+						}
 					}
 				}else{
 					tower.setCurrentDelay(tower.getCurrentDelay() + 1 * Game.gameSpeed);
@@ -419,18 +444,24 @@ public class World  extends WorldBase implements NodeMap{
 		}
 
 
-		ArrayList<GameEntity> removeEnt = new ArrayList<>(entities);
-
-		//ConcurrentModificationException...
-		for(GameEntity ent : Collections.synchronizedList(entities)){
+		for(GameEntity ent : entities){
 			if(ent == null) continue;
+			if(ent instanceof Projectile){
+				GameEntity entTarget = ((Projectile)ent).entityTarget;
+				
+				if(entTarget == null || entTarget.health <= 0 || new Vector2f(ent.x, ent.y).distance(new Vector2f(entTarget.x, entTarget.y)) <= 0.5){
+					entities.remove(ent);
+					continue;
+				}
+			}
 
+			for(int i = 0; i < Game.gameSpeed; i++)
 			ent.updateEntityBase();
 
 			boolean found = false;
 
 			if(ent.getEntityHealth() <= 0){
-				removeEnt.remove(ent);
+				entities.remove(ent);
 				continue;
 			}
 
@@ -458,7 +489,7 @@ public class World  extends WorldBase implements NodeMap{
 			}
 
 			if(Math.round(ent.x) == Game.world.getEndNode().x && Math.round(ent.y) == Game.world.getEndNode().y){
-				removeEnt.remove(ent);
+				entities.remove(ent);
 				Game.player.lives -= ent.getEntityHealth() >= 10 ? ent.getEntityHealth() / 10 : 1;
 				loseCheck();
 
@@ -466,13 +497,19 @@ public class World  extends WorldBase implements NodeMap{
 			}
 
 		}
+	}
 
-		entities = null;
-		entities = removeEnt;
-		entities.trimToSize();
-
-		removeEnt.trimToSize();
-		removeEnt = null;
+	//Used to reset the attack delay on towers for each wave
+	public void resetTowerTimers(){
+		try {
+			for (Tower[] t : towers) {
+				for (Tower tt : t) {
+					tt.setCurrentDelay(tt.getAttackDelay());
+				}
+			}
+		}catch (Exception e){
+			//e.printStackTrace();
+		}
 	}
 
 	public void loseCheck(){

@@ -6,8 +6,8 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Path;
 
-public class FastEnemy extends GameEntity {
-	public FastEnemy(WorldBase world, float x, float y) {
+public class SpeedyMonster extends GameEntity {
+	public SpeedyMonster( WorldBase world, float x, float y) {
 		super(world, x, y);
 	}
 
@@ -16,9 +16,16 @@ public class FastEnemy extends GameEntity {
 		return 50;
 	}
 
+	public float movementSpeed = 30;
+
 	@Override
 	public float getMovementSpeed() {
-		return 30;
+		return movementSpeed;
+	}
+
+	@Override
+	public void setMovementSpeed(float f) {
+		movementSpeed = f;
 	}
 
 	@Override
@@ -48,6 +55,6 @@ public class FastEnemy extends GameEntity {
 
 	@Override
 	public String getEntityName() {
-		return "Fast Enemy";
+		return "Speedy Mob";
 	}
 }

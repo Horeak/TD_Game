@@ -1,5 +1,6 @@
 package Effects;
 
+import Entities.GameEntity;
 import EntityFiles.Entity;
 
 public abstract class Effect {
@@ -7,22 +8,22 @@ public abstract class Effect {
 	public int time = 0, timeLasted = 0;
 
 	public Effect(int timeToLast){
-		time = timeToLast;
+		time = timeToLast * 1000;
 	}
 
 	public abstract String getEffectName();
-	public abstract void applyToEntity(Entity ent);
-	public abstract void update(Entity ent);
-	public abstract void finishEffect(Entity ent);
+	public abstract void applyToEntity(GameEntity ent);
+	public abstract void update(GameEntity ent);
+	public abstract void finishEffect(GameEntity ent);
 
+	public abstract boolean allowMultiple();
+
+
+	//TODO Add a way to where effects rendering on entities
 
 	@Override
 	public String toString() {
-		return "Effect{" +
-				"name=" + getEffectName() +
-				", time=" + time +
-				", timeLasted=" + timeLasted +
-				'}';
+		return getEffectName() + ": " + ((time - timeLasted) / 1000) + "s";
 	}
 
 

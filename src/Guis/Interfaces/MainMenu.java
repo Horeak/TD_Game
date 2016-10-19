@@ -3,7 +3,7 @@ package Guis.Interfaces;
 import Interface.GuiButton;
 import Interface.UIMenu;
 import Main.Game;
-import Utils.FontHandler;
+import Utilities.FontHandler;
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
