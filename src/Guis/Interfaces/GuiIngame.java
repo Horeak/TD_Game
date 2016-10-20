@@ -108,7 +108,7 @@ public class GuiIngame extends Gui {
 		String towerDamage = tower != null ? Game.player.getTowerDamage(tower) + "" : "N/A";
 		String towerRange = tower != null ? Game.player.getTowerRange(tower) + "" : "N/A";
 
-		String towerLefel = tower != null ? tower.getTowerLevel() + "/" + tower.GetTowerMaxLevel() : "N/A";
+		String towerLefel = tower != null ? tower.getTowerLevel() + "/" + tower.getTowerMaxLevel() : "N/A";
 
 		g2.setColor(Color.black);
 		FontHandler.resizeFont(g2, 16);
@@ -144,7 +144,7 @@ public class GuiIngame extends Gui {
 
 		if(Game.world.getTower(WorldRender.mX, WorldRender.mY) != null){
 			Tower turret = Game.world.getTower(WorldRender.mX, WorldRender.mY);
-			renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{turret.getTowerName(),"Level: " + turret.getTowerLevel() + "/" + turret.GetTowerMaxLevel(), "Damage: " + Game.player.getTowerDamage(turret), "Range: " + Game.player.getTowerRange(turret), "", "Enemies killed: " + turret.getEnemiesKilledByTower(), GameConfig.debugMode ? "Enemies in sight: " + turret.getEnemiesInSight() : null, GameConfig.debugMode ? "Attack time: " + turret.getCurrentDelay()/100 + "/" + turret.getAttackDelay() : null});
+			renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{ turret.getTowerName(), "Level: " + turret.getTowerLevel() + "/" + turret.getTowerMaxLevel(), "Damage: " + Game.player.getTowerDamage(turret), "Range: " + Game.player.getTowerRange(turret), "", "Enemies killed: " + turret.getEnemiesKilledByTower(), GameConfig.debugMode ? "Enemies in sight: " + turret.getEnemiesInSight() : null, GameConfig.debugMode ? "Attack time: " + turret.getCurrentDelay()/100 + "/" + turret.getAttackDelay() : null});
 		}
 
 		if(GameConfig.renderDebug)
@@ -159,7 +159,7 @@ public class GuiIngame extends Gui {
 		for(Entity ent : Collections.synchronizedList(Game.world.entities)){
 			if(ent == null) continue;
 
-			if(((GameEntity)ent).isMouseOver(WorldRender.mouseX, WorldRender.mouseY, WorldRender.renderX, WorldRender.renderY)){
+			if(((GameEntity)ent).selectable() && ((GameEntity)ent).isMouseOver(WorldRender.mouseX, WorldRender.mouseY, WorldRender.renderX, WorldRender.renderY)){
 				renderTooltip(WorldRender.mouseX + 5, WorldRender.mouseY + 5, 0,0, new String[]{ent.getEntityName(), "Health: " + ent.getEntityHealth() + "/" + ent.getEntityMaxHealth(), GameConfig.debugMode ? "Effects: " + ((GameEntity) ent).activeEffects.values().toString() : "", GameConfig.debugMode ? " " : null, GameConfig.debugMode ? "Money Dropped: " + ((GameEntity) ent).getMoneyDropped() : null, GameConfig.debugMode ? "Speed: " + ((GameEntity) ent).getMovementSpeed() : null});
 			}
 		}
@@ -324,6 +324,12 @@ class shopButton extends GuiObject{
 		if(isMouseOver()){
 			String[] tt = new String[]{ tower.getTowerName(), "Range: " + Game.player.getTowerRange(tower), "Damage: " + Game.player.getTowerDamage(tower), "Cost: " + Game.player.getCostFromTower(tower)};
 			((Gui)menu).renderTooltip(x, y + height, width, height, tt);
+			
+			String t = tower.getTowerDescription();
+			String[] tg = t.split("\\n");
+			
+			((Gui)menu).renderTooltip(5, Game.gameWindowY - 25 - ((tg.length - 1) * 12), width, height, tg);
+			
 		}
 
 		g2.setColor(c);

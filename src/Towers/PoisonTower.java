@@ -9,11 +9,12 @@ import Main.Files.TowerRarity;
 import Map.World;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.geom.Circle;
+import org.newdawn.slick.geom.Path;
 import org.newdawn.slick.geom.Rectangle;
 
 import java.util.Map;
 
+//TODO Add proper visual and animation
 public class PoisonTower extends Tower {
 	public PoisonTower(){
 		super(null, 0, 0);
@@ -31,17 +32,17 @@ public class PoisonTower extends Tower {
 
 	@Override
 	public String getTowerDescription() {
-		return "Applies a damage overtime poison effect to nearby monsters";
+		return "Applies a damage overtime poison effect to nearby monsters\nPoison can be stacked from multiple towers";
 	}
 
 	@Override
-	public int GetTowerMaxLevel() {
+	public int getTowerMaxLevel() {
 		return 5;
 	}
 
 	@Override
 	public boolean canUpgrade() {
-		return getTowerLevel() < GetTowerMaxLevel();
+		return getTowerLevel() < getTowerMaxLevel();
 	}
 
 	@Override
@@ -95,22 +96,43 @@ public class PoisonTower extends Tower {
 			return true;
 		}
 	}
+	
+	double angle = 0;
 
 	@Override
 	public void renderTower(Graphics g2, int renderX, int renderY, int sizeX, int sizeY) {
 		Rectangle rectangle = new Rectangle(renderX, renderY, sizeX, sizeY);
-
+		
+		GameEntity target = getTarget();
+		
 		g2.setColor(Color.green);
 		g2.fill(rectangle);
 		g2.setColor(Color.black);
 		g2.draw(rectangle);
-
-		//TODO Make Poison tower have a different render then normal one
-		Circle circle = new Circle(rectangle.getCenterX(), rectangle.getCenterY(), ((sizeX + sizeY) / 6));
-
+		
+		g2.pushTransform();
+		
+		Path Shape = new Path(rectangle.getMinX() + (sizeX * 0.25F), rectangle.getMaxY() - (sizeY * 0.25F));
+		
+		Shape.lineTo(rectangle.getMinX() + (sizeX * 0.25F), rectangle.getY() + (sizeY * 0.25F));
+		Shape.lineTo(rectangle.getMinX() + (sizeX * 0.5F), rectangle.getY() + (sizeY * 0.12F));
+		Shape.lineTo(rectangle.getMaxX() - (sizeX * 0.25F), rectangle.getY() + (sizeY * 0.25F));
+		Shape.lineTo(rectangle.getMaxX() - (sizeX * 0.25F), rectangle.getMaxY() - (sizeY * 0.25F));
+		Shape.close();
+		
+		
+		if(target != null && target.rect != null) {
+			angle = Math.atan2(Shape.getCenterX() - target.rect.getCenterX(), Shape.getCenterY() - target.rect.getCenterY());
+			angle = (float)Math.toDegrees(angle);
+		}
+		
+		g2.rotate(Shape.getCenterX(), Shape.getCenterY(), -(float)angle);
+		
 		g2.setColor(Color.green.darker());
-		g2.fill(circle);
+		g2.fill(Shape);
 		g2.setColor(Color.black);
-		g2.draw(circle);
+		g2.draw(Shape);
+		
+		g2.popTransform();
 	}
 }

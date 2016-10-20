@@ -31,13 +31,13 @@ public class BasicTower extends Tower {
 	}
 
 	@Override
-	public int GetTowerMaxLevel() {
+	public int getTowerMaxLevel() {
 		return 10;
 	}
 
 	@Override
 	public boolean canUpgrade() {
-		return getTowerLevel() < GetTowerMaxLevel();
+		return getTowerLevel() < getTowerMaxLevel();
 	}
 
 	@Override
@@ -57,9 +57,11 @@ public class BasicTower extends Tower {
 
 	@Override
 	public int getAttackDelay() {
-		return 6;
+		return 3 + getTowerLevel();
 	}
 
+	double angle = 0;
+	
 	@Override
 	public void renderTower(Graphics g2, int renderX, int renderY, int sizeX, int sizeY) {
 		Rectangle rectangle = new Rectangle(renderX, renderY, sizeX, sizeY);
@@ -80,10 +82,11 @@ public class BasicTower extends Tower {
 		Triangle.close();
 		
 		if(target != null && target.rect != null) {
-			double angle = Math.atan2(Triangle.getCenterX() - target.rect.getCenterX(), Triangle.getCenterY() - target.rect.getCenterY());
+			angle = Math.atan2(Triangle.getCenterX() - target.rect.getCenterX(), Triangle.getCenterY() - target.rect.getCenterY());
 			angle = (float)Math.toDegrees(angle);
-			g2.rotate(Triangle.getCenterX(), Triangle.getCenterY(), -(float)angle);
 		}
+		
+		g2.rotate(Triangle.getCenterX(), Triangle.getCenterY(), -(float)angle);
 		
 		g2.setColor(Color.orange);
 		g2.fill(Triangle);

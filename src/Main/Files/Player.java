@@ -42,7 +42,7 @@ public class Player {
 	}
 
 	public int getHealthScaled(int i){
-		return (int)(i * Game.game.world.difficulty.healthModifier); //TODO: Make higher wave have more enemies or enemies with more health?
+		return (int)(i * Game.game.world.difficulty.healthModifier) + ((Game.player.round + Game.player.wave) - 2); //TODO: Make higher wave have more enemies or enemies with more health?
 	}
 
 	//TODO Make sure every round and wave has enemies

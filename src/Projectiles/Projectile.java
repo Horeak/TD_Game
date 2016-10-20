@@ -7,7 +7,6 @@ import Utilities.FontHandler;
 import World.WorldBase;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
-import org.newdawn.slick.geom.Vector2f;
 
 public class Projectile extends GameEntity {
 	public GameEntity entityTarget;
@@ -26,9 +25,16 @@ public class Projectile extends GameEntity {
 	}
 	
 	@Override
+	public boolean selectable() {
+		return false;
+	}
+	
+	@Override
 	public String getEntityName() {
 		return towerSource.getTowerName() + " Projectile";
 	}
+	
+	
 	
 	@Override
 	public int getMoneyDropped() {
@@ -57,16 +63,10 @@ public class Projectile extends GameEntity {
 			return;
 		}
 		
-		
 		float targetX = entityTarget.x - x;
 		float targetY = entityTarget.y - y;
 		
 		this.x += (targetX * (getMovementSpeed() / 100)) / (10 / Game.gameSpeed);
 		this.y += (targetY * (getMovementSpeed() / 100)) / (10 / Game.gameSpeed);
-		
-		if(new Vector2f(x, y).distance(new Vector2f(entityTarget.x, entityTarget.y)) <= 0.5){
-			towerSource.attackEntity(entityTarget);
-			world.entities.remove(this);
-		}
 	}
 }

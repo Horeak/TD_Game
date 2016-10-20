@@ -2,15 +2,11 @@ package Main.Files;
 
 
 import Entities.GameEntity;
-import Main.Game;
 import Map.World;
 import PathFinding.Utils.Node;
 import Projectiles.Projectile;
-import Utilities.FontHandler;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Vector2f;
-
-import java.awt.*;
 
 public abstract class Tower extends Node implements Cloneable{
 	public World world;
@@ -31,10 +27,13 @@ public abstract class Tower extends Node implements Cloneable{
 	public abstract String getTowerName();
 	public abstract String getTowerDescription();
 
-	public abstract int GetTowerMaxLevel();
+	public abstract int getTowerMaxLevel();
 	public int getTowerLevel(){return level;}
 	public abstract boolean canUpgrade();
 	public void upgradeTower(){level += 1;}
+	public void setTowerLevel(int level){
+		this.level = level;
+	}
 
 	public abstract int getTowerCost();
 	
@@ -71,16 +70,7 @@ public abstract class Tower extends Node implements Cloneable{
 
 
 	public abstract void renderTower( Graphics g2, int renderX, int renderY, int sizeX, int sizeY);
-
-	public void renderTowerPostEffects(Graphics g2, int renderX, int renderY, int sizeX, int sizeY){
-		FontHandler.resizeFont(g2, 7);
-		FontHandler.changeFontStyle(g2, Font.BOLD);
-		g2.drawString("Lv. " + Game.IntegerToRoman(getTowerLevel()), renderX, renderY + sizeY - 2);
-		FontHandler.resetFont(g2);
-
-	}
-
-
+	
 
 	//TODO Add toggle button for this!
 	public TowerTargetMode getTargetMode(){

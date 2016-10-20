@@ -23,6 +23,10 @@ public abstract class GameEntity extends Entity {
 	public abstract void setMovementSpeed(float f);
 
 	public abstract void renderEntity(Graphics g2, float x, float y, float blockSizeX, float blockSizeY);
+	
+	public boolean selectable(){
+		return true;
+	}
 
 
 	public void applyEffect(Effect effect){
@@ -50,13 +54,12 @@ public abstract class GameEntity extends Entity {
 
 	public boolean damage(int damage, boolean drop){
 		setEntityHealth(getEntityHealth() - damage);
-
+		
 		if (getEntityHealth() <= 0) {
-
 			if(drop) {
 				Game.player.money += getMoneyDropped();
 			}
-
+			world.entities.remove(this);
 			return true;
 		}
 

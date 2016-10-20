@@ -57,14 +57,11 @@ public class WorldRender extends AbstractWindowRender {
 
 				if(node != null && node instanceof Tower){
 					((Tower)node).renderTower(g2, (int)(x * renderX), (int)(y * renderY), (int)renderX, (int)renderY);
-					((Tower)node).renderTowerPostEffects(g2, (int)(x * renderX), (int)(y * renderY), (int)renderX, (int)renderY);
 				}
 			}
 		}
 		
-		float towerCircleScale = 1.75F;
-
-		//TODO Need to change render of circles to match actual range
+		int alpha = 75;
 		if(Game.ingame){
 			boolean tt = towerSelected == null || towerSelected.x != mX && Game.world.getTower(mX, mY) != null || towerSelected.y != mY && Game.world.getTower(mX, mY) != null || (Game.world.getTower(mX, mY) == null);
 			if(towerSelected != null && (tt)){
@@ -73,7 +70,7 @@ public class WorldRender extends AbstractWindowRender {
 						if(new Vector2f(xX + towerSelected.x, yY + towerSelected.y).distance(new Vector2f(towerSelected.x, towerSelected.y)) <= Game.player.getTowerRange(towerSelected)){
 							Rectangle rectangle = new Rectangle((xX + towerSelected.x) * renderX, (yY + towerSelected.y) * renderY, renderX, renderY);
 							
-							g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(255, 145, 135, 100)));
+							g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(255, 145, 135, alpha)));
 							g2.fill(rectangle);
 							
 							g2.setColor(Color.black);
@@ -90,12 +87,17 @@ public class WorldRender extends AbstractWindowRender {
 				if(Game.world.getTower(mX, mY) != null){
 					Tower tower = Game.world.getTower(mX, mY);
 					
+					String t = tower.getTowerDescription();
+					String[] tg = t.split("\\n");
+					
+					GuiIngame.renderTooltip(5, Game.gameWindowY - 25 - ((tg.length - 1) * 12), 5, 90, tg);
+					
 					for(int xX = -Game.player.getTowerRange(tower); xX <= Game.player.getTowerRange(tower); xX++){
 						for(int yY = -Game.player.getTowerRange(tower); yY <= Game.player.getTowerRange(tower); yY++){
 							if(new Vector2f(xX + tower.x, yY + tower.y).distance(new Vector2f(tower.x, tower.y)) <= Game.player.getTowerRange(tower)){
 								Rectangle rectangle = new Rectangle((xX + tower.x) * renderX, (yY + tower.y) * renderY, renderX, renderY);
 								
-								g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(255, 255, 255, 100)));
+								g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(255, 255, 255, alpha)));
 								g2.fill(rectangle);
 								
 								g2.setColor(Color.black);
@@ -109,20 +111,37 @@ public class WorldRender extends AbstractWindowRender {
 				GuiIngame.selectedTower.renderTower(g2, mouseX - (int) (renderX / 2), mouseY - (int) (renderY / 2), (int) renderX, (int) renderY);
 				int Range = 3;
 				
+				GuiIngame.selectedTower.setTowerLevel(GuiIngame.selectedTower.getTowerMaxLevel());
+				
 				if(Game.player.getTowerRange(GuiIngame.selectedTower) >= Range){
 					Range = Game.player.getTowerRange(GuiIngame.selectedTower) + 3;
 				}
+				
+				GuiIngame.selectedTower.setTowerLevel(1);
 			
 				for(int xX = -Range; xX <= Range; xX++){
 					for(int yY = -Range; yY <= Range; yY++){
 						Rectangle rectangle = new Rectangle((xX + mX) * renderX, (yY + mY) * renderY, renderX, renderY);
 						Color g = Game.world.validNode(null, xX + mX, yY + mY) ? Color.green : Color.red;
 						
-						if(new Vector2f(xX + mX, yY + mY).distance(new Vector2f(mX, mY)) <= Game.player.getTowerRange(GuiIngame.selectedTower)){
-							g = Color.blue;
+							if (new Vector2f(xX + mX, yY + mY).distance(new Vector2f(mX, mY)) <= Game.player.getTowerRange(GuiIngame.selectedTower)) {
+								if(g == Color.red){
+									g = Color.magenta;
+								}else{
+									g = Color.blue;
+								}
+							}
+							
+							if (g != Color.blue && g != Color.red) {
+								GuiIngame.selectedTower.setTowerLevel(GuiIngame.selectedTower.getTowerMaxLevel());
+								if (new Vector2f(xX + mX, yY + mY).distance(new Vector2f(mX, mY)) <= Game.player.getTowerRange(GuiIngame.selectedTower)) {
+									g = Color.orange.darker();
+								}
+								GuiIngame.selectedTower.setTowerLevel(1);
+							
 						}
 						
-						g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(g.getRed(), g.getGreen(), g.getBlue(), 100)));
+						g2.setColor(FontHandler.getColorToSlick(new java.awt.Color(g.getRed(), g.getGreen(), g.getBlue(), alpha)));
 						g2.fill(rectangle);
 						
 						g2.setColor(Color.black);
@@ -139,14 +158,20 @@ public class WorldRender extends AbstractWindowRender {
 	@Override
 	public void mouseClick( int button, int x, int y ) {
 		super.mouseClick(button, x, y);
-
+		
+		
+		if(button == 1 && GuiIngame.selectedTower != null){
+			GuiIngame.selectedTower = null;
+		}
+		
+		if(button != 0) return;
 		if(Game.world == null) return;
 
 		if(mouseX > 0 && mouseY > 0 && mouseX < Game.gameWindowX && mouseY < Game.gameWindowY) {
 			towerSelected = null;
 		}
 
-		boolean t = Game.world.validNode(null, mX, mY) || Game.world.getNode(mX, mY) != null && Game.world.getNode(mX,mY) instanceof BaseNode && ((BaseNode)Game.world.getNode(mX,mY)).getValue() > 0 && !((BaseNode) Game.world.getNode(mX, mY)).isPath && ((BaseNode) Game.world.getNode(mX, mY)).getValue() != 100;
+		boolean t = Game.world.validNode(null, mX, mY);
 
 		if(Game.world.getTower(mX,mY) != null){
 			if(towerSelected != null && towerSelected.x == mX && towerSelected.y == mY || towerSelected == null && (Game.world.getTower(mX, mY) == null)){

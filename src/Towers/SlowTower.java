@@ -28,17 +28,17 @@ public class SlowTower extends Tower {
 
 	@Override
 	public String getTowerDescription() {
-		return "Slows down monsters.";
+		return "Freezes monsters and slows them down for a short time.\nSlowness can be stacked from multiple towers.";
 	}
 
 	@Override
-	public int GetTowerMaxLevel() {
+	public int getTowerMaxLevel() {
 		return 5;
 	}
 
 	@Override
 	public boolean canUpgrade() {
-		return getTowerLevel() < GetTowerMaxLevel();
+		return getTowerLevel() < getTowerMaxLevel();
 	}
 
 	@Override
@@ -71,6 +71,8 @@ public class SlowTower extends Tower {
 		return false;
 	}
 
+	double angle = 0;
+	
 	@Override
 	public void renderTower(Graphics g2, int renderX, int renderY, int sizeX, int sizeY) {
 		Rectangle rectangle = new Rectangle(renderX, renderY, sizeX, sizeY);
@@ -93,10 +95,11 @@ public class SlowTower extends Tower {
 		
 		
 		if(target != null && target.rect != null) {
-			double angle = Math.atan2(Shape.getCenterX() - target.rect.getCenterX(), Shape.getCenterY() - target.rect.getCenterY());
+			angle = Math.atan2(Shape.getCenterX() - target.rect.getCenterX(), Shape.getCenterY() - target.rect.getCenterY());
 			angle = (float)Math.toDegrees(angle);
-			g2.rotate(Shape.getCenterX(), Shape.getCenterY(), -(float)angle);
 		}
+		
+		g2.rotate(Shape.getCenterX(), Shape.getCenterY(), -(float)angle);
 		
 		g2.setColor(Color.cyan);
 		g2.fill(Shape);

@@ -64,9 +64,10 @@ public class World  extends WorldBase implements NodeMap{
 
 		try {
 			for (GameEntity ent : Collections.synchronizedList(entities)) {
-				if(ent != null)
-				if (new Vector2f(ent.x, ent.y).distance(new Vector2f(tower.x, tower.y)) <= Game.player.getTowerRange(tower)) {
-					ents.add(ent);
+				if(ent != null) {
+					if (new Vector2f(Math.round(ent.x), Math.round(ent.y)).distance(new Vector2f(tower.x, tower.y)) < Game.player.getTowerRange(tower)) {
+						ents.add(ent);
+					}
 				}
 			}
 		}catch (Exception e){
@@ -431,9 +432,11 @@ public class World  extends WorldBase implements NodeMap{
 					}else {
 						if (entTarget != null) {
 							if(entTarget != null && tower.canAttackEntity(entTarget)) {
-								Projectile projectile = new Projectile(this, tower.x, tower.y, entTarget, tower);
-								entities.add(projectile);
-								tower.setCurrentDelay(0);
+								if(new Vector2f(entTarget.x, entTarget.y).distance(new Vector2f(tower.x, tower.y)) < Game.player.getTowerRange(tower)) {
+									Projectile projectile = new Projectile(this, tower.x, tower.y, entTarget, tower);
+									entities.add(projectile);
+									tower.setCurrentDelay(0);
+								}
 							}
 						}
 					}
@@ -450,6 +453,7 @@ public class World  extends WorldBase implements NodeMap{
 				GameEntity entTarget = ((Projectile)ent).entityTarget;
 				
 				if(entTarget == null || entTarget.health <= 0 || new Vector2f(ent.x, ent.y).distance(new Vector2f(entTarget.x, entTarget.y)) <= 0.5){
+					((Projectile)ent).towerSource.attackEntity(entTarget);
 					entities.remove(ent);
 					continue;
 				}

@@ -11,6 +11,7 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Circle;
 import org.newdawn.slick.geom.Rectangle;
 
+//TODO Add proper visual and animation
 public class HeavyTower extends Tower {
 	public HeavyTower(){
 		super(null, 0, 0);
@@ -23,16 +24,16 @@ public class HeavyTower extends Tower {
 
 	@Override
 	public String getTowerName() {
-		return "Heavy Tower";
+		return "Anti-Boss Tower";
 	}
 
 	@Override
 	public String getTowerDescription() {
-		return "Tower will do 5% of any enemies health. Will only attack boss monsters.";
+		return "Tower will only attack Boss Monsters but will do 5% of the total health of any boss monsters.";
 	}
 
 	@Override
-	public int GetTowerMaxLevel() {
+	public int getTowerMaxLevel() {
 		return 1;
 	}
 
